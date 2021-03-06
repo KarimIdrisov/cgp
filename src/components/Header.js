@@ -29,27 +29,15 @@ export default function Header(props) {
   return (
     <React.Fragment>
       <Toolbar className={classes.toolbar}>
-        <Typography
-          component="h2"
-          variant="h5"
-          color="inherit"
-          align="center"
-          noWrap
-          className={classes.toolbarTitle}
-        >
+        <Typography component="h2" variant="h5" color="inherit" align="center" noWrap
+          className={classes.toolbarTitle}>
           {title}
         </Typography>
       </Toolbar>
       <Toolbar component="nav" variant="dense" className={classes.toolbarSecondary}>
         {sections.map((section) => (
-          <Link
-            color="inherit"
-            noWrap
-            key={section.title}
-            variant="body2"
-            href={section.url}
-            className={classes.toolbarLink}
-          >
+          <Link color="inherit" noWrap key={section.title} variant="h6" href={section.url}
+                className={classes.toolbarLink}>
             {section.title}
           </Link>
         ))}

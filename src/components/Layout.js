@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import Header from './Header';
-import MainFeaturedPost from './MainFeaturedPost';
+import MainContent from './MainContent';
 import Footer from './Footer';
 
 
@@ -32,7 +32,7 @@ const mainFeaturedPost = {
 
 
 
-export default function Blog() {
+export default function Layout() {
   const classes = useStyles();
 
   return (
@@ -41,7 +41,7 @@ export default function Blog() {
       <Container maxWidth="lg">
         <Header title="CGP - DSP" sections={sections} />
         <main>
-          <MainFeaturedPost post={mainFeaturedPost} />
+          <MainContent post={mainFeaturedPost} />
         </main>
       </Container>
       <Footer description="Еловская И.К., Аликулова З.Х., Идрисов К.И., Ким А.В." />
