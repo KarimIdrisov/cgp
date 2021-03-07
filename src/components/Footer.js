@@ -17,10 +17,11 @@ function Copyright() {
 
 const useStyles = makeStyles((theme) => ({
   footer: {
-    
     // marginTop: theme.spacing(8),
     padding: theme.spacing(6, 0),
+
   },
+
 }));
 
 export default function Footer(props) {
