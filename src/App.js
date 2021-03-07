@@ -1,9 +1,18 @@
 import './App.css';
-import Layout from "./components/Layout"
+import {BrowserRouter as Router, Switch, Route} from "react-router-dom"
+import HomePage from "./pages/HomePage";
+import FilePage from "./pages/FilePage";
 
 function App() {
   return (
-    <Layout/>
+      <div>
+        <Router>
+          <Switch>
+            <Route path="/file" component={FilePage}/>
+            <Route path="/" component={HomePage}/>
+          </Switch>
+        </Router>
+      </div>
   );
 }
 
