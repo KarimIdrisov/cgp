@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Layout from "../components/Layout";
 import {Typography} from "@material-ui/core";
+import Dropzone from "../components/Dropzone.js"
 
 
 const useStyles = makeStyles((theme) => ({
@@ -18,7 +19,7 @@ export default function FilePage(props) {
 
     return (
         <Layout>
-            <Typography>File</Typography>
+            <Dropzone/>
         </Layout>
     );
 }
