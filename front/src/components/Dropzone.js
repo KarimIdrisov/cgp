@@ -1,6 +1,6 @@
 import React, {useCallback} from 'react';
 import PropTypes from 'prop-types';
-import {makeStyles} from '@material-ui/core/styles';
+import {formatMs, makeStyles} from '@material-ui/core/styles';
 import {useDropzone} from 'react-dropzone'
 import Dropzone from 'react-dropzone'
 import Paper from '@material-ui/core/Paper';
@@ -28,13 +28,39 @@ const useStyles = makeStyles((theme) => ({
 export default function MainContent(props) {
     const classes = useStyles();
     const {post} = props;
-    const onDrop = useCallback(acceptedFiles => {
-        console.log(acceptedFiles)
-    }, [])
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+
+    // const onDrop = useCallback(acceptedFiles => {
+    //     console.log(acceptedFiles)
+    //     const request = new Request("/upload");
+    //     const req = request.post()
+    //     acceptedFiles.forEach(file => {
+    //         req.attach(file.name, file)
+    //     })
+    //     console.log("send")
+    //     req.end()
+    // }, [])
+
+    function onDrop(file) {
+        console.log(file)
+        fetch('http://localhost:3080/upload', { // Your POST endpoint
+            method: 'POST',
+            headers: {
+
+            },
+            body: file // This is your file object
+        }).then(
+            response => response // if the response is a JSON object
+        ).then(
+            success => console.log(success) // Handle the success response object
+        ).catch(
+            error => console.log(error) // Handle the error response object
+        );
+    }
+
+    const {acceptedFiles, getRootProps, getInputProps, isDragActive} = useDropzone()
 
     return (
-        <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)}>
+        <Dropzone onDrop={acceptedFiles => onDrop(acceptedFiles)}>
             {({getRootProps, getInputProps}) => (
                 <section>
                     <Paper className={classes.dropzone}>
