@@ -15,9 +15,8 @@ const mainFeaturedPost = {
     imgText: 'main image description',
 };
 
-export default function HomePage(props) {
+export default function HomePage() {
     const classes = useStyles();
-    const { posts, title } = props;
 
     return (
         <Layout>

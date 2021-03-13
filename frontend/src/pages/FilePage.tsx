@@ -1,5 +1,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import Layout from "../components/Layout";
+import Dropzone from "../components/Dropzone"
 
 
 const useStyles = makeStyles((theme) => ({
@@ -9,11 +11,12 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function About(props) {
+export default function FilePage() {
+    const classes = useStyles();
 
     return (
-        <></>
+        <Layout>
+            <Dropzone/>
+        </Layout>
     );
 }
-
-About.propTypes = {};
