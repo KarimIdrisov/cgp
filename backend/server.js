@@ -71,6 +71,7 @@ app.get('/model-data', (req, res) => {
         let reverseStartDay = startDate.split("-")
         reverseStartDay = reverseStartDay[2] + '-' + reverseStartDay[1] + '-' + reverseStartDay[0]
         const endTime = new Date(reverseStartDay + "T" + startTime)
+        const start = new Date(reverseStartDay + "T" + startTime)
         endTime.setMilliseconds(endTime.getMilliseconds() + ((samplingRate / 4) * samplesNumber * 1000))
         let times = [0]
         for (let i = 1; i < +samplesNumber; i++) {
@@ -81,7 +82,7 @@ app.get('/model-data', (req, res) => {
             samplesNumber: samplesNumber,
             samplingRate: samplingRate,
             time: samplingRate / 4,
-            start: reverseStartDay + "T" + startTime,
+            start: start,
             end: endTime,
             channelsName: channelsName,
             signals: signals,

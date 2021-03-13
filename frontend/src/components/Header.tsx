@@ -38,7 +38,9 @@ const useStyles = makeStyles((theme) => ({
     },
     toolbarBtn: {
         height: "30px",
-        width: "100px"
+        width: "100px",
+        textTransform: "none",
+
     },
     Link: {
         textDecoration: 'none',
@@ -46,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
     },
     dialog: {
         color: "black",
-    }
+    },
 }));
 
 interface Props {
