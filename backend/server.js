@@ -21,8 +21,30 @@ app.get('/', (req, res) => {
     res.send('App Works !!!!');
 });
 
+app.get('/channels', (req, res) => {
+    const file = "file-" + req.query.id;
+
+    fs.readFile(`@/../uploads/${file}`, 'utf8', (err, data) => {
+        if (err) {
+            console.error(err)
+            return
+        }
+        const lines = data.split(/\r?\n/);
+
+        const channelsNumber = lines[1];
+        let channelsName = lines[11].split(';');
+        channelsName = channelsName.slice(0, +channelsNumber);
+        res.json({
+            channelsNumber: channelsNumber,
+            channelsName: channelsName,
+        });
+    })
+});
+
 app.get('/model-data', (req, res) => {
-    fs.readFile('@/../uploads/file-earthquake.txt', 'utf8', (err, data) => {
+    const file = "file-" + req.query.id;
+
+    fs.readFile(`@/../uploads/${file}`, 'utf8', (err, data) => {
         if (err) {
             console.error(err)
             return
@@ -34,14 +56,16 @@ app.get('/model-data', (req, res) => {
         const samplingRate = lines[5];
         const startDate = lines[7]
         const startTime = lines[9];
-        const channelsName = lines[11].split(';');
+        let channelsName = lines[11].split(';');
+        channelsName = channelsName.slice(0, +channelsNumber);
+
         const signals = {}
         for (let i = 0; i < channelsNumber; i++) {
             signals[channelsName[i]] = []
         }
-        for (let i = 12; i < lines.length; i++) {
-            for (let i = 0; i < channelsNumber; i++) {
-                signals[channelsName[i]].push(lines[12].split(' ')[i])
+        for (let i = 12; i < lines.length - 1; i++) {
+            for (let j = 0; j < channelsNumber; j++) {
+                signals[channelsName[j]].push(lines[i].split(' ')[j])
             }
         }
         let reverseStartDay = startDate.split("-")
@@ -56,11 +80,13 @@ app.get('/model-data', (req, res) => {
             channelsNumber: channelsNumber,
             samplesNumber: samplesNumber,
             samplingRate: samplingRate,
+            time: samplingRate / 4,
             start: reverseStartDay + "T" + startTime,
             end: endTime,
             channelsName: channelsName,
             signals: signals,
             times: times,
+            file: file
         });
     })
 });

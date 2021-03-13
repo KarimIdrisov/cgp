@@ -28,18 +28,6 @@ export default function MainContent(props: any) {
     const {post} = props;
     const history = useHistory();
 
-
-    // const onDrop = useCallback(acceptedFiles => {
-    //     console.log(acceptedFiles)
-    //     const request = new Request("/upload");
-    //     const req = request.post()
-    //     acceptedFiles.forEach(file => {
-    //         req.attach(file.name, file)
-    //     })
-    //     console.log("send")
-    //     req.end()
-    // }, [])
-
     function onDrop(file: any) {
         console.log(file)
 
@@ -48,6 +36,7 @@ export default function MainContent(props: any) {
         axios.post("http://localhost:3080/upload", data, { // receive two parameter endpoint url ,form data
         })
             .then(res => { // then print response status
+                console.log(res)
                 if(res.statusText === "OK") {
                     history.push("/modeling/" + file[0].name);
                 }

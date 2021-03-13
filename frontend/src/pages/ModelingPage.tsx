@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import Layout from "../components/Layout";
-import {Typography} from "@material-ui/core";
 import axios from "axios";
 import Graphic from "../components/Graphic";
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@material-ui/core";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme) => ({
     canvas: {
         width: "200px",
         height: "200px",
+    },
+    dialog: {
+        color: "black",
     }
 }));
 
@@ -26,31 +29,28 @@ interface Data {
     times: Array<number>,
     channelsName: Array<string>,
     signals: any,
-
+    time: number,
 }
 
-export default function ModelingPage() {
+export default function ModelingPage(props: any) {
     const classes = useStyles();
     const [data, setData] = useState<Data>()
-    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         async function getData() {
-            setIsLoading(true);
-            const result = await axios.get('http://localhost:3080/model-data');
+            const result = await axios.get('http://localhost:3080/model-data/?id=' + props.match.params.filename);
             setData(result.data);
         }
 
         getData();
     }, [setData]);
 
-    console.log(data?.channelsName)
     return (
         <Layout>
-
-            {(data?.channelsName.map( (channel: string, number) => (
-                <>                <canvas id={channel} className={classes.canvas}/>
-                <Graphic key={channel} id={data?.channelsName[number]} times={data?.times} data={data?.signals[channel]}/>
+            {(data?.channelsName.map((channel: string, number) => (
+                <>
+                    <Graphic key={channel} id={data?.channelsName[number]} times={data?.times}
+                             data={data?.signals[channel]}/>
                 </>
             )))}
         </Layout>

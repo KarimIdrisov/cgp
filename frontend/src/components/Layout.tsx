@@ -4,6 +4,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import Header from './Header';
 import Footer from './Footer';
+import NavigationWindow from "./NavigationWindow";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -13,12 +14,15 @@ const useStyles = makeStyles((theme) => ({
     main: {
         marginTop: theme.spacing(3),
         marginBottom: theme.spacing(3),
+    },
+    canvas: {
+        width: "300px",
+        maxWidth: "300px",
     }
 }));
 
 
 const sections = [
-    {title: 'Файл', url: '/file'},
     {title: 'Моделирование', url: '/modeling'},
     {title: 'Фильтрация', url: '#'},
     {title: 'Анализ', url: '#'},
@@ -32,6 +36,24 @@ interface Props {
 
 export default function Layout(props: any) {
     const classes = useStyles();
+
+
+    if(window.location.href.includes(".txt")) {
+        const file = window.location.href.slice(31)
+        return (
+            <React.Fragment>
+                <CssBaseline/>
+                <Container maxWidth="lg">
+                    <Header title="CGP - DSP" sections={sections}/>
+                    <NavigationWindow file={file}/>
+                    <main className={classes.main}>
+                        {props.children}
+                    </main>
+                </Container>
+                <Footer description="Еловская И.К., Аликулова З.Х., Идрисов К.И., Ким А.В."/>
+            </React.Fragment>
+        )
+    }
 
     return (
         <React.Fragment>
