@@ -1,10 +1,10 @@
-import React, {FunctionComponent, ReactComponentElement} from 'react';
+import React, {FunctionComponent} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import Header from './Header';
 import Footer from './Footer';
-import NavigationWindow from "./NavigationWindow";
+import Sidebar from "./Sidebar";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -21,15 +21,6 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-
-const sections = [
-    {title: 'Моделирование', url: '/modeling'},
-    {title: 'Фильтрация', url: '#'},
-    {title: 'Анализ', url: '#'},
-    {title: 'Настройки', url: '#'},
-    {title: 'Справка', url: '#'},
-];
-
 interface Props {
     children: FunctionComponent,
 }
@@ -44,8 +35,8 @@ export default function Layout(props: any) {
             <React.Fragment>
                 <CssBaseline/>
                 <Container maxWidth="lg">
-                    <Header title="CGP - DSP" sections={sections}/>
-                    <NavigationWindow file={file}/>
+                    <Sidebar file={file}/>
+                    <Header title="CGP - DSP"/>
                     <main className={classes.main}>
                         {props.children}
                     </main>
@@ -59,7 +50,7 @@ export default function Layout(props: any) {
         <React.Fragment>
             <CssBaseline/>
             <Container maxWidth="lg">
-                <Header title="CGP - DSP" sections={sections}/>
+                <Header title="CGP - DSP"/>
                 <main className={classes.main}>
                     {props.children}
                 </main>

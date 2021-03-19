@@ -15,7 +15,7 @@ import {
     MenuItem
 } from "@material-ui/core";
 import axios from "axios";
-import Layout from "./Layout";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -49,10 +49,15 @@ const useStyles = makeStyles((theme) => ({
     dialog: {
         color: "black",
     },
+    width1300px: {
+        width: "1350px"
+    },
+    width1000px: {
+        width: "1000px"
+    }
 }));
 
 interface Props {
-    sections: Array<Section>,
     title: string,
 }
 
@@ -74,9 +79,16 @@ interface Data {
     file: string
 }
 
+const sections = [
+    {title: 'Фильтрация', url: '#'},
+    {title: 'Анализ', url: '#'},
+    {title: 'Настройки', url: '#'},
+];
+
+
 export default function Header(props: Props) {
     const classes = useStyles();
-    const {sections, title} = props;
+    const {title} = props;
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -123,16 +135,15 @@ export default function Header(props: Props) {
                 <DialogTitle id="alert-dialog-title">{"Текущее состояние многоканального сигнала"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description" className={classes.dialog}>
-                        {data?.file ? (<p>{file}</p>) : (<p>Файл не загружен</p>)}
                         <p>Общее число каналов - {data?.channelsNumber}</p>
                         <p>Общее количество отсчетов – {data?.samplesNumber}</p>
                         <p>Частота дискретизации – {data?.samplingRate} Гц(шаг между отсчетами {data?.time})</p>
                         <p>Дата и время начала записи - {data?.start.replace("T", " ")}</p>
                         <p>Дата и время окончания записи - {data?.end.replace("T", " ")}</p>
                         <p>Информация о каналах</p>
-                        <p>{data?.channelsName.map( channel => (
-                            <p>{channel}</p>
-                        ))}</p>
+                        <div>{data?.channelsName.map( (channel, number) => (
+                            <Typography component={"p"} key={number}>{channel}</Typography>
+                        ))}</div>
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -149,9 +160,12 @@ export default function Header(props: Props) {
                     </Typography>
                 </Link>
             </Toolbar>
-            <Toolbar component="nav" variant="dense" className={classes.toolbarSecondary}>
-                <Button color="inherit"  aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}
-                      className={classes.toolbarBtn}>
+            <Toolbar component="nav" variant="dense" className={clsx(classes.toolbarSecondary, {
+                [classes.width1300px]: !window.location.href.includes("modeling"),
+                [classes.width1000px]: window.location.href.includes("modeling")
+            })}>
+                <Button color="inherit" aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}
+                        className={classes.toolbarBtn}>
                     <Typography variant="h6">Файл</Typography>
                 </Button>
                 {sections.map((section: Section, number) => (

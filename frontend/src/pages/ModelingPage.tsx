@@ -3,7 +3,6 @@ import {makeStyles} from '@material-ui/core/styles';
 import Layout from "../components/Layout";
 import axios from "axios";
 import Graphic from "../components/Graphic";
-import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@material-ui/core";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -17,6 +16,9 @@ const useStyles = makeStyles((theme) => ({
     },
     dialog: {
         color: "black",
+    },
+    div: {
+        height: "400px"
     }
 }));
 
@@ -26,9 +28,7 @@ interface Data {
     samplingRate: number,
     start: string,
     end: string,
-    times: Array<number>,
     channelsName: Array<string>,
-    signals: any,
     time: number,
 }
 
@@ -49,10 +49,10 @@ export default function ModelingPage(props: any) {
         <Layout>
             {(data?.channelsName.map((channel: string, number) => (
                 <>
-                    <Graphic key={channel} id={data?.channelsName[number]} times={data?.times}
-                             data={data?.signals[channel]}/>
+                    <Graphic key={number} id={data?.channelsName[number]} file={props.match.params.filename}/>
                 </>
             )))}
+            <div className={classes.div}> </div>
         </Layout>
     );
 }
