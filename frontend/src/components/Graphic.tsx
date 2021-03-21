@@ -1,11 +1,7 @@
 import {makeStyles} from '@material-ui/core/styles';
-import React, {useRef, useLayoutEffect, useEffect, useState} from 'react';
-import * as am4core from "@amcharts/amcharts4/core";
-import * as am4charts from "@amcharts/amcharts4/charts";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import React, {useEffect, useState} from 'react';
 import axios from "axios";
 
-am4core.useTheme(am4themes_animated);
 
 
 const useStyles = makeStyles((theme) => ({
@@ -16,49 +12,76 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Graphic(props: any) {
     const classes = useStyles();
-    const chart = useRef(null);
-    const [signal, setSignal] = useState(Object);
+    const [signal, setSignal] = useState({
+        signalData: Array,
+        times: Array,
+    });
+
+    const [loading, setLoading] = useState(false)
 
     useEffect( () => {
+        setLoading(true)
         async function getData() {
-            const result = await axios.get('http://localhost:3080/get-signal/?file=' + props.file + "&signal=" + props.id);
-            setSignal(result.data);
+            const result = await axios.get('http://localhost:3081/get-signal/?file=' + props.file + "&signal=" + props.id);
+            setSignal({
+                signalData: result.data.signalData,
+                times: result.data.times
+            });
         }
 
         getData();
-    }, [setSignal])
+        setLoading(false)
 
-    useLayoutEffect(() => {
-        let x = am4core.create(props.id, am4charts.XYChart);
+    }, [])
 
-        x.paddingRight = 20;
-        x.data = signal["data"];
+    if (!loading) {
 
-        let dateAxis = x.xAxes.push(new am4charts.DateAxis());
-        dateAxis.renderer.grid.template.location = 0;
+        const Chart = require('chart.js');
+        const ctx = document.getElementById(props.id.toString());
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: signal.times,
+                datasets: [{
+                    label: props.id,
+                    data: signal.signalData,
+                    borderColor: [
+                        'rgb(72,70,70)'
+                    ],
+                    pointStyle: "line",
+                    tension: "0.1",
+                    cubicInterpolationMode: "monotone",
+                    fill: "false",
+                }]
+            },
+            options: {
+                tooltips: {enabled: false},
+                scales: {
+                    xAxes: [ {
+                        ticks: {
+                            display: true,
+                            stepSize: 10000
+                        }
+                    } ],
+                    yAxes: [ {
+                        ticks: {
+                            display: false,
+                            stepSize: 10000
+                        }
+                    } ]
+                },
+                animation: {
+                    duration: 0 // general animation time
+                },
+                hover: {
+                    animationDuration: 0,
+                    mode: null// duration of animations when hovering an item
+                },
+                responsiveAnimationDuration: 0 // animation duration after a resize
 
-        let valueAxis = x.yAxes.push(new am4charts.ValueAxis());
-        // @ts-ignore
-        valueAxis.tooltip.disabled = true;
-        valueAxis.renderer.minWidth = 35;
-
-        let series = x.series.push(new am4charts.LineSeries());
-        series.dataFields.dateX = "time";
-        series.dataFields.valueY = "f(x)";
-        series.tooltipText = "{valueY.value}";
-        x.cursor = new am4charts.XYCursor();
-
-        let scrollbarX = new am4charts.XYChartScrollbar();
-        scrollbarX.series.push(series);
-        x.scrollbarX = scrollbarX;
-
-        // @ts-ignore
-        chart.current = x;
-
-        return () => {
-            x.dispose();
-        };
-    }, [signal]);
+            }
+        });
+    }
 
     return (
         <></>

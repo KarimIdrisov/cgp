@@ -54,12 +54,14 @@ const useStyles = makeStyles((theme) => ({
     },
     width1000px: {
         width: "1000px"
+    },
+    grams: {
+        height: "30px",
+        width: "200px",
+        margin: "auto",
+        textTransform: 'none',
     }
 }));
-
-interface Props {
-    title: string,
-}
 
 interface Section {
     title: string,
@@ -86,27 +88,32 @@ const sections = [
 ];
 
 
-export default function Header(props: Props) {
+export default function Header(props: { title: any, file : any }) {
     const classes = useStyles();
-    const {title} = props;
+    const title = props.title;
 
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorFile, setAnchorFile] = React.useState<null | HTMLElement>(null);
+    const [anchorGrams, setAnchorGrams] = React.useState<null | HTMLElement>(null);
 
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
+    const handleClickFile = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorFile(event.currentTarget);
+    };
+
+    const handleClickGrams = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorGrams(event.currentTarget);
     };
 
     const handleClose = () => {
-        setAnchorEl(null);
+        setAnchorFile(null);
+        setAnchorGrams(null);
     };
 
     const [data, setData] = useState<Data>()
-    const file = window.location.href.slice(31)
 
 
     useEffect(() => {
         async function getData() {
-            const result = await axios.get('http://localhost:3080/model-data/?id=' + file);
+            const result = await axios.get('http://localhost:3081/model-data/?id=' + props.file);
             setData(result.data);
         }
 
@@ -115,8 +122,7 @@ export default function Header(props: Props) {
 
     function getInfo() {
         setOpen(true);
-        setAnchorEl(null);
-
+        setAnchorFile(null);
     }
 
     const [open, setOpen] = React.useState(false);
@@ -161,12 +167,16 @@ export default function Header(props: Props) {
                 </Link>
             </Toolbar>
             <Toolbar component="nav" variant="dense" className={clsx(classes.toolbarSecondary, {
-                [classes.width1300px]: !window.location.href.includes("modeling"),
-                [classes.width1000px]: window.location.href.includes("modeling")
+                [classes.width1300px]: !(window.location.href.includes("mod") || window.location.href.includes("gram")),
+                [classes.width1000px]: (window.location.href.includes("mod") || window.location.href.includes("gram"))
             })}>
-                <Button color="inherit" aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}
+                <Button color="inherit" aria-controls="file" aria-haspopup="true" onClick={handleClickFile}
                         className={classes.toolbarBtn}>
                     <Typography variant="h6">Файл</Typography>
+                </Button>
+                <Button color="inherit" aria-controls="grams" aria-haspopup="true" onClick={handleClickGrams}
+                        className={classes.grams}>
+                    <Typography variant="h6">Осциолограммы</Typography>
                 </Button>
                 {sections.map((section: Section, number) => (
                     <Link color="inherit" key={number} to={section.url}
@@ -176,10 +186,25 @@ export default function Header(props: Props) {
                 ))}
             </Toolbar>
             <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
+                id="grams"
+                anchorEl={anchorGrams}
                 keepMounted
-                open={Boolean(anchorEl)}
+                open={Boolean(anchorGrams)}
+                onClose={handleClose}>
+                <Link color="inherit" to={"/grams"}
+                      className={classes.Link}>
+                    <MenuItem onClick={handleClose}>Канал 1</MenuItem>
+                </Link>
+                <Link color="inherit" to={"/grams"}
+                      className={classes.Link}>
+                    <MenuItem onClick={handleClose}>Канал 2</MenuItem>
+                </Link>
+            </Menu>
+            <Menu
+                id="file"
+                anchorEl={anchorFile}
+                keepMounted
+                open={Boolean(anchorFile)}
                 onClose={handleClose}>
                 <Link color="inherit" to={"/file"}
                       className={classes.Link}><MenuItem onClick={handleClose}>Загрузить файл</MenuItem></Link>

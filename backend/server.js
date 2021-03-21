@@ -2,7 +2,8 @@ const express = require('express');
 const app = express();
 const multer = require('multer')
 const cors = require('cors');
-port = 3080;
+const fs = require('fs')
+port = 3081;
 
 app.use(cors())
 
@@ -16,10 +17,6 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({storage: storage}).single('file')
-
-app.get('/', (req, res) => {
-    res.send('App Works !!!!');
-});
 
 app.get('/channels', (req, res) => {
     const file = "file-" + req.query.id;
@@ -68,20 +65,16 @@ app.get('/get-signal', (req, res) => {
         for (let i = 1; i < +samplesNumber; i++) {
             times.push(+times[i - 1] + +samplingRate)
         }
-        const jsonData = [];
-        for (let i = 0; i < +samplesNumber; i++) {
-            jsonData.push({"f(x)": signalData[i], "time": times[i]})
-        }
+
         res.json({
-            "data": jsonData
+            signalData: signalData,
+            times: times,
         });
     })
 });
 
 app.get('/model-data', (req, res) => {
     const file = "file-" + req.query.id;
-
-    const start = Date.now();
 
     fs.readFile(`@/../uploads/${file}`, 'utf8', (err, data) => {
         if (err) {
@@ -111,7 +104,7 @@ app.get('/model-data', (req, res) => {
         reverseStartDay = reverseStartDay[2] + '-' + reverseStartDay[1] + '-' + reverseStartDay[0]
         const endTime = new Date(reverseStartDay + "T" + startTime)
         const start = new Date(reverseStartDay + "T" + startTime)
-        endTime.setMilliseconds(endTime.getMilliseconds() + ((samplingRate / 4) * samplesNumber * 1000))
+        endTime.setMilliseconds(endTime.getMilliseconds() + (samplesNumber / samplingRate))
         let times = [0]
         for (let i = 1; i < +samplesNumber; i++) {
             times.push(+times[i - 1] + +samplingRate)
@@ -126,9 +119,6 @@ app.get('/model-data', (req, res) => {
             channelsName: channelsName,
         });
     })
-
-    console.log("New time - ", file)
-    console.log("Time: ", Date.now() - start);
 });
 
 app.post('/upload', function (req, res) {
@@ -147,15 +137,6 @@ app.post('/upload', function (req, res) {
     })
 
 });
-
-const fs = require('fs')
-fs.stat('@/../uploads/file-earthquake.txt', (err, stats) => {
-    if (err) {
-        console.error(err)
-        return
-    }
-    //сведения о файле содержатся в аргументе `stats`
-})
 
 app.listen(port, () => {
     console.log(`Server listening on the port::${port}`);

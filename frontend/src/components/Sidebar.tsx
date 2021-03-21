@@ -3,8 +3,10 @@ import {Theme, createStyles, makeStyles} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import axios from "axios";
+import {Menu, MenuItem} from "@material-ui/core";
+import {Link} from "react-router-dom";
 
-const drawerWidth = 400;
+const drawerWidth = 350;
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -36,8 +38,12 @@ const useStyles = makeStyles((theme: Theme) =>
             padding: theme.spacing(3),
         },
         canvas: {
-            maxWidth: "400px",
-        }
+            maxWidth: "350px",
+        },
+        Link: {
+            textDecoration: 'none',
+            color: "black",
+        },
     }),
 );
 
@@ -54,23 +60,45 @@ export default function PermanentDrawerRight(props: any) {
 
     useEffect(() => {
         async function getData() {
-            const result = await axios.get('http://localhost:3080/channels/?id=' + props.file);
+            const result = await axios.get('http://localhost:3081/channels/?id=' + props.file);
             setData(result.data);
         }
 
         getData();
     }, [setData]);
 
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        // @ts-ignore
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     return (
         <div className={classes.root}>
+            <Menu
+                id="simple-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+            >
+                <Link color="inherit" to={"/grams/" + props.file}
+                      className={classes.Link}>
+                    <MenuItem onClick={handleClose}>Осциолограмма</MenuItem>
+                </Link>
+            </Menu>
             <CssBaseline/>
             <Drawer className={classes.drawer} variant="permanent" classes={{paper: classes.drawerPaper}}
                     anchor="right">
-                {data?.channelsName.map( (channel) => (
-                    <>
-                        <div id={channel} className={classes.canvas}></div>
-                    </>
+                {data?.channelsName.map((channel, number) => (
+                    <div aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} key={number}>
+                        <canvas id={channel} className={classes.canvas}/>
+                    </div>
                 ))}
             </Drawer>
         </div>

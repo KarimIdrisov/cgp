@@ -4,7 +4,6 @@ import Layout from "../components/Layout";
 import axios from "axios";
 import Graphic from "../components/Graphic";
 
-
 const useStyles = makeStyles((theme) => ({
     markdown: {
         ...theme.typography.body2,
@@ -38,7 +37,7 @@ export default function ModelingPage(props: any) {
 
     useEffect(() => {
         async function getData() {
-            const result = await axios.get('http://localhost:3080/model-data/?id=' + props.match.params.filename);
+            const result = await axios.get('http://localhost:3081/model-data/?id=' + props.match.params.filename);
             setData(result.data);
         }
 
@@ -46,13 +45,14 @@ export default function ModelingPage(props: any) {
     }, [setData]);
 
     return (
-        <Layout>
+        <Layout file={props.match.params.filename}>
             {(data?.channelsName.map((channel: string, number) => (
-                <>
-                    <Graphic key={number} id={data?.channelsName[number]} file={props.match.params.filename}/>
-                </>
+                <React.Fragment key={number}>
+                    <Graphic id={data?.channelsName[number]} file={props.match.params.filename}/>
+                </React.Fragment>
             )))}
             <div className={classes.div}> </div>
+
         </Layout>
     );
 }

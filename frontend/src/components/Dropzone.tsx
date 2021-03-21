@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
     dropzone: {
         padding: 32,
     },
-    dzoneText: {
+    dropzoneText: {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -25,7 +25,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function MainContent(props: any) {
     const classes = useStyles();
-    const {post} = props;
     const history = useHistory();
 
     function onDrop(file: any) {
@@ -33,7 +32,7 @@ export default function MainContent(props: any) {
 
         const data = new FormData()
         data.append('file', file[0])
-        axios.post("http://localhost:3080/upload", data, { // receive two parameter endpoint url ,form data
+        axios.post("http://localhost:3081/upload", data, { // receive two parameter endpoint url ,form data
         })
             .then(res => { // then print response status
                 console.log(res)
@@ -48,7 +47,7 @@ export default function MainContent(props: any) {
             {({getRootProps, getInputProps}) => (
                 <section>
                     <Paper className={classes.dropzone}>
-                        <div {...getRootProps()} className={classes.dzoneText}>
+                        <div {...getRootProps()} className={classes.dropzoneText}>
                             <input {...getInputProps()} />
                             <Typography style={{fontSize: '1.6rem'}}>Перетащите сюда нужные файлы, либо нажмите, а затем
                                 выберите нужный файл.</Typography>

@@ -1,4 +1,4 @@
-import React, {FunctionComponent} from 'react';
+import React from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
@@ -18,25 +18,25 @@ const useStyles = makeStyles((theme) => ({
     canvas: {
         width: "300px",
         maxWidth: "300px",
-    }
+    },
+     container: {
+        maxWidth: "1050px",
+         marginLeft: "10px"
+     }
 }));
-
-interface Props {
-    children: FunctionComponent,
-}
 
 export default function Layout(props: any) {
     const classes = useStyles();
 
 
-    if(window.location.href.includes(".txt")) {
-        const file = window.location.href.slice(31)
+    if(window.location.href.includes(".txt") || window.location.href.includes("grams")) {
+        const file = props.file
         return (
             <React.Fragment>
                 <CssBaseline/>
-                <Container maxWidth="lg">
+                <Container className={classes.container}>
                     <Sidebar file={file}/>
-                    <Header title="CGP - DSP"/>
+                    <Header title="CGP - DSP" file={file}/>
                     <main className={classes.main}>
                         {props.children}
                     </main>
@@ -49,8 +49,8 @@ export default function Layout(props: any) {
     return (
         <React.Fragment>
             <CssBaseline/>
-            <Container maxWidth="lg">
-                <Header title="CGP - DSP"/>
+            <Container maxWidth={"lg"}>
+                <Header title="CGP - DSP" file={null}/>
                 <main className={classes.main}>
                     {props.children}
                 </main>
