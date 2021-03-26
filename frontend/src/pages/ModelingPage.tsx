@@ -34,10 +34,11 @@ interface Data {
 export default function ModelingPage(props: any) {
     const classes = useStyles();
     const [data, setData] = useState<Data>()
+    const file = localStorage.getItem("file")
 
     useEffect(() => {
         async function getData() {
-            const result = await axios.get('http://localhost:3081/model-data/?id=' + props.match.params.filename);
+            const result = await axios.get('http://localhost:3081/model-data/?id=' + file);
             setData(result.data);
         }
 
@@ -45,10 +46,10 @@ export default function ModelingPage(props: any) {
     }, [setData]);
 
     return (
-        <Layout file={props.match.params.filename}>
+        <Layout file={file}>
             {(data?.channelsName.map((channel: string, number) => (
                 <React.Fragment key={number}>
-                    <Graphic id={data?.channelsName[number]} file={props.match.params.filename}/>
+                    <Graphic id={data?.channelsName[number]} file={file}/>
                 </React.Fragment>
             )))}
             <div className={classes.div}> </div>

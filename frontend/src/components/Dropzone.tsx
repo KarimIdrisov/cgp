@@ -28,15 +28,14 @@ export default function MainContent(props: any) {
     const history = useHistory();
 
     function onDrop(file: any) {
-        console.log(file)
-
         const data = new FormData()
         data.append('file', file[0])
         axios.post("http://localhost:3081/upload", data, { // receive two parameter endpoint url ,form data
         })
             .then(res => { // then print response status
-                console.log(res)
+                console.log(file)
                 if(res.statusText === "OK") {
+                    localStorage.setItem("file", file[0].name)
                     history.push("/modeling/" + file[0].name);
                 }
             })

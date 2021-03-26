@@ -3,12 +3,21 @@ import {makeStyles} from '@material-ui/core/styles';
 import Layout from "../components/Layout";
 import axios from "axios";
 import Graphic from "../components/Graphic";
+import Oscillogram from "../components/Oscillogram";
 
-// test
-import * as am4core from "@amcharts/amcharts4/core";
-import * as am4charts from "@amcharts/amcharts4/charts";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-am4core.useTheme(am4themes_animated);
+import {useHistory} from "react-router-dom";
+import Typography from "@material-ui/core/Typography";
+import {
+    Button,
+    Dialog, DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Menu,
+    MenuItem,
+    TextField
+} from "@material-ui/core";
+import {useAlert} from "react-alert";
 
 const useStyles = makeStyles((theme) => ({
     markdown: {
@@ -24,6 +33,17 @@ const useStyles = makeStyles((theme) => ({
     },
     div: {
         height: "400px"
+    },
+    tools: {
+        margin: 'auto',
+        display: 'flex',
+        justifyContent: "center"
+    },
+    btn: {
+        textTransform: 'none'
+    },
+    fragment: {
+        display: "flex",
     }
 }));
 
@@ -35,72 +55,135 @@ interface Data {
     end: string,
     channelsName: Array<string>,
     time: number,
+    min: number,
+    max: number
 }
 
 export default function GramsPage(props: any) {
     const classes = useStyles();
     const [data, setData] = useState<Data>()
+    const file = localStorage.getItem("file")
+    const reqChannels = props.match.params.channels
+    const history = useHistory();
+    const [open, setOpen] = React.useState(false);
+    const [min, setMin] = useState(data?.min)
+    const [max, setMax] = useState(data?.max)
+    const [valueMin, setMinValue] = useState(0)
+    const [valueMax, setMaxValue] = useState(0)
+    const alert = useAlert()
+
+
+    const [anchorTools, setAnchorTools] = React.useState<null | HTMLElement>(null);
 
     useEffect(() => {
         async function getData() {
-            const result = await axios.get('http://localhost:3081/model-data/?id=' + props.match.params.filename);
+            const result = await axios.get('http://localhost:3081/model-data/?id=' + file);
             setData(result.data);
         }
 
         getData();
     }, [setData]);
 
-    // test
-    const chart = useRef(null);
-    useLayoutEffect(() => {
-        let x = am4core.create("chartdiv", am4charts.XYChart);
+    const handleClickTools = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorTools(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorTools(null)
+    };
 
-        x.paddingRight = 20;
+    function getFragment() {
+        setOpen(true);
+    }
 
-        let data = [];
-        let visits = 10;
+    const handleCloseDialog = () => {
+        setOpen(false);
+    };
 
-        for (let i = 1; i < 366; i++) {
-            visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
-            data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
+    function getFragmentDialog() {
+        if (min!! < data!!.min || min!! > data!!.max || max!! < data!!.min || max!! > data!!.max) {
+            alert.show('Неверные значения промежутка')
+            setAnchorTools(null)
+        } else {
+            if (valueMin > valueMax) {
+                let tmp = valueMin
+                setMinValue(valueMax)
+                setMaxValue(tmp)
+            }
+            setMin(valueMin)
+            setMax(valueMax)
+            setOpen(false);
+            setAnchorTools(null)
         }
+    }
 
-        x.data = data;
-
-        let dateAxis = x.xAxes.push(new am4charts.DateAxis());
-        dateAxis.renderer.grid.template.location = 0;
-
-        let valueAxis = x.yAxes.push(new am4charts.ValueAxis());
-        //@ts-ignore
-
-        valueAxis.tooltip.disabled = true;
-        valueAxis.renderer.minWidth = 35;
-
-        let series = x.series.push(new am4charts.LineSeries());
-        series.dataFields.dateX = "date";
-        series.dataFields.valueY = "value";
-        series.tooltipText = "{valueY.value}";
-        x.cursor = new am4charts.XYCursor();
-
-        let scrollbarX = new am4charts.XYChartScrollbar();
-        scrollbarX.series.push(series);
-        x.scrollbarX = scrollbarX;
-        //@ts-ignore
-        chart.current = x;
-
-        return () => {
-            x.dispose();
-        };
-    }, []);
+    function dropFragment() {
+        setMin(data?.min)
+        setMax(data?.max)
+        setAnchorTools(null)
+    }
 
     return (
-        <Layout file={props.match.params.filename}>
+        <Layout file={file}>
+            <Menu
+                id="tools"
+                anchorEl={anchorTools}
+                keepMounted
+                open={Boolean(anchorTools)}
+                onClose={handleClose}>
+                <MenuItem onClick={getFragment}>Фрагмент</MenuItem>
+                <MenuItem onClick={dropFragment}>Сбросить фрагмент</MenuItem>
+
+            </Menu>
+            <div className={classes.tools}>
+                <Button color="inherit" aria-controls="tools" aria-haspopup="true" onClick={handleClickTools}
+                        className={classes.btn}>
+                    <Typography variant="h6">Инструменты</Typography>
+                </Button>
+            </div>
             {(data?.channelsName.map((channel: string, number) => (
                 <>
-                    <Graphic key={number} id={data?.channelsName[number]} file={props.match.params.filename}/>
+                    <Graphic key={number} id={data?.channelsName[number]} file={file}/>
                 </>
             )))}
-            <div id="chartdiv" style={{ width: "1000px", height: "500px" }}></div>
+            {/*{(reqChannels.split(";").map((channel: string, number: number) => (*/}
+            {/*    <div id={channel} key={number} style={{width: "1000px", height: "500px"}}> </div>*/}
+            {/*)))}*/}
+            {(reqChannels.split(";").map((channel: string, number: number) => (
+                <Oscillogram min={min} max={max} file={file} id={channel} key={number}/>
+            )))}
+
+            <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Отсчеты</DialogTitle>
+                <DialogContent className={classes.fragment}>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="От"
+                        type="number"
+                        defaultValue={data?.min}
+                        onChange={num => setMinValue(+num.target.value)}
+                    />
+                    <TextField
+                        margin="dense"
+                        id="to"
+                        label="До"
+                        type="number"
+                        defaultValue={data?.max}
+                        onChange={num => setMaxValue(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={getFragmentDialog} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
         </Layout>
     );
 }

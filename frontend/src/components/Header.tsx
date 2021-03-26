@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {makeStyles} from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import {Link} from 'react-router-dom';
+import {Link, useHistory} from 'react-router-dom';
 import {
     Button,
     Dialog,
@@ -16,6 +16,8 @@ import {
 } from "@material-ui/core";
 import axios from "axios";
 import clsx from "clsx";
+
+
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -83,7 +85,6 @@ interface Data {
 
 const sections = [
     {title: 'Фильтрация', url: '#'},
-    {title: 'Анализ', url: '#'},
     {title: 'Настройки', url: '#'},
 ];
 
@@ -91,6 +92,7 @@ const sections = [
 export default function Header(props: { title: any, file : any }) {
     const classes = useStyles();
     const title = props.title;
+    const history = useHistory();
 
     const [anchorFile, setAnchorFile] = React.useState<null | HTMLElement>(null);
     const [anchorGrams, setAnchorGrams] = React.useState<null | HTMLElement>(null);
@@ -102,7 +104,6 @@ export default function Header(props: { title: any, file : any }) {
     const handleClickGrams = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorGrams(event.currentTarget);
     };
-
     const handleClose = () => {
         setAnchorFile(null);
         setAnchorGrams(null);
@@ -130,6 +131,18 @@ export default function Header(props: { title: any, file : any }) {
     const handleCloseDialog = () => {
         setOpen(false);
     };
+
+    const newOscillogram = (event: React.MouseEvent<HTMLLIElement>) => {
+        // @ts-ignore
+        const channel = anchorGrams.childNodes[anchorGrams.childNodes.length - 1].id;
+        setAnchorGrams(null);
+        if (!window.location.href.includes("grams")) {
+            history.push("/grams/" + channel);
+        } else {
+
+        }
+
+    }
 
     return (
         <React.Fragment>
@@ -176,7 +189,7 @@ export default function Header(props: { title: any, file : any }) {
                 </Button>
                 <Button color="inherit" aria-controls="grams" aria-haspopup="true" onClick={handleClickGrams}
                         className={classes.grams}>
-                    <Typography variant="h6">Осциолограммы</Typography>
+                    <Typography variant="h6">Осцилограммы</Typography>
                 </Button>
                 {sections.map((section: Section, number) => (
                     <Link color="inherit" key={number} to={section.url}
@@ -191,14 +204,9 @@ export default function Header(props: { title: any, file : any }) {
                 keepMounted
                 open={Boolean(anchorGrams)}
                 onClose={handleClose}>
-                <Link color="inherit" to={"/grams"}
-                      className={classes.Link}>
-                    <MenuItem onClick={handleClose}>Канал 1</MenuItem>
-                </Link>
-                <Link color="inherit" to={"/grams"}
-                      className={classes.Link}>
-                    <MenuItem onClick={handleClose}>Канал 2</MenuItem>
-                </Link>
+                {(data?.channelsName && data?.channelsName.length > 0) ? (data?.channelsName.map( (channel, number) => (
+                    <MenuItem onClick={newOscillogram} key={number}>{channel}</MenuItem>
+                ))) : <MenuItem>Файл не загружен</MenuItem>}
             </Menu>
             <Menu
                 id="file"

@@ -9,12 +9,13 @@ import FilePage from "./pages/FilePage";
 import ModelingPage from "./pages/ModelingPage";
 import GramsPage from "./pages/GramsPage";
 
+
 function App() {
     return (
         <div>
             <Router>
                 <Switch>
-                    <Route path="/grams/:filename" component={GramsPage}/>
+                    <Route path="/grams/:channels" component={GramsPage}/>
                     <Route path="/modeling/:filename" component={ModelingPage}/>
                     <Route path="/file" component={FilePage}/>
                     <Route path="/" component={HomePage}/>

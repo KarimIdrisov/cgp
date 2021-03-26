@@ -22,7 +22,7 @@ export default function Graphic(props: any) {
     useEffect( () => {
         setLoading(true)
         async function getData() {
-            const result = await axios.get('http://localhost:3081/get-signal/?file=' + props.file + "&signal=" + props.id);
+            const result = await axios.get('http://localhost:3081/get-signal-sidebar/?file=' + props.file + "&signal=" + props.id);
             setSignal({
                 signalData: result.data.signalData,
                 times: result.data.times

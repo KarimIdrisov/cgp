@@ -4,7 +4,8 @@ import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import axios from "axios";
 import {Menu, MenuItem} from "@material-ui/core";
-import {Link} from "react-router-dom";
+import { useHistory } from "react-router-dom";
+
 
 const drawerWidth = 350;
 
@@ -55,6 +56,7 @@ interface Data {
 
 export default function PermanentDrawerRight(props: any) {
     const classes = useStyles();
+    const history = useHistory();
 
     const [data, setData] = useState<Data>()
 
@@ -78,19 +80,29 @@ export default function PermanentDrawerRight(props: any) {
         setAnchorEl(null);
     };
 
+    const newOscillogram = (event: React.MouseEvent<HTMLLIElement>) => {
+        // @ts-ignore
+        const channel = anchorEl.childNodes[anchorEl.childNodes.length - 1].id;
+        setAnchorEl(null);
+        if (!window.location.href.includes("grams")) {
+            history.push("/grams/" + channel);
+        } else {
+            const oldChannels = window.location.href.slice(28)
+            console.log(oldChannels)
+            if (oldChannels.length === 0) {
+                history.push("/grams/" + channel)
+            }
+            if (!oldChannels.includes(channel)) {
+                history.push('/grams/' + oldChannels + ';' + channel);
+            }
+        }
+
+    }
+
     return (
         <div className={classes.root}>
-            <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                keepMounted
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-            >
-                <Link color="inherit" to={"/grams/" + props.file}
-                      className={classes.Link}>
-                    <MenuItem onClick={handleClose}>Осциолограмма</MenuItem>
-                </Link>
+            <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+                <MenuItem onClick={newOscillogram}>Осцилограмма</MenuItem>
             </Menu>
             <CssBaseline/>
             <Drawer className={classes.drawer} variant="permanent" classes={{paper: classes.drawerPaper}}
