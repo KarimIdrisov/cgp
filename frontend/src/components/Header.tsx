@@ -134,14 +134,20 @@ export default function Header(props: { title: any, file : any }) {
 
     const newOscillogram = (event: React.MouseEvent<HTMLLIElement>) => {
         // @ts-ignore
-        const channel = anchorGrams.childNodes[anchorGrams.childNodes.length - 1].id;
+        const channel = event.target.id;
         setAnchorGrams(null);
+        console.log(channel)
         if (!window.location.href.includes("grams")) {
             history.push("/grams/" + channel);
         } else {
-
+            const oldChannels = window.location.href.slice(28)
+            if (oldChannels.length === 0) {
+                history.push("/grams/" + channel)
+            }
+            if (!oldChannels.includes(channel)) {
+                history.push('/grams/' + oldChannels + ';' + channel);
+            }
         }
-
     }
 
     return (
@@ -205,7 +211,7 @@ export default function Header(props: { title: any, file : any }) {
                 open={Boolean(anchorGrams)}
                 onClose={handleClose}>
                 {(data?.channelsName && data?.channelsName.length > 0) ? (data?.channelsName.map( (channel, number) => (
-                    <MenuItem onClick={newOscillogram} key={number}>{channel}</MenuItem>
+                    <MenuItem onClick={newOscillogram} key={number} id={channel}>{channel}</MenuItem>
                 ))) : <MenuItem>Файл не загружен</MenuItem>}
             </Menu>
             <Menu
