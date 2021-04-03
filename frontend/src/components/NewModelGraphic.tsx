@@ -14,31 +14,35 @@ const useStyles = makeStyles((theme) => ({
 export default function NewModelGraphic(props: any) {
 
     const [name, setName] = useState()
+    const [data, setData] = useState<any>()
 
     useEffect(() => {
         setName(props.id)
     }, [])
 
-    if (props.id === 'impulse') {
-
+    if (data === undefined && props.id === 'impulse') {
+        setData([{x: props.args, y: 1}, {x: props.args, y: 0}])
     }
+
+    console.log(data)
 
     return (
         <div>
             <div>
                 <Typography style={{textAlign: 'center'}}>{props.id}</Typography>
                 <VictoryChart>
-                    <VictoryLine style={{
+                    <VictoryLine
+                        data = {data}
+                        style={{
                         data: {stroke: "black"},
                         parent: {border: "1px solid #ccc"}
                     }}/>
-                    <VictoryAxis crossAxis
+                    <VictoryAxis crossAxis dependentAxis
                                  width={400}
                                  height={400}
                                  theme={VictoryTheme.material}
                                  offsetY={50}
                                  standalone={false}
-                                 label="Time (ms)"
                                  orientation="bottom"
                     />
                     <VictoryAxis dependentAxis crossAxis
