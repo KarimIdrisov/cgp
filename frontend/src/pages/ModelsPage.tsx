@@ -31,12 +31,10 @@ interface Data {
     time: number,
 }
 
-export default function ModelingPage(props: any) {
+export default function ModelsPage(props: any) {
     const classes = useStyles();
     const [data, setData] = useState<Data>()
     const file = localStorage.getItem("file")
-    const [newModels, setNewModels] = useState<Array<any>>()
-
 
     useEffect(() => {
         async function getData() {
@@ -45,8 +43,6 @@ export default function ModelingPage(props: any) {
         }
 
         getData();
-        //@ts-ignore
-        setNewModels(JSON.parse(localStorage.getItem('models')))
     }, [setData]);
 
     return (

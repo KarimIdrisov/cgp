@@ -3,7 +3,7 @@
 # samples number
     104797
 # sampling rate
-4.00000000000000000e+00
+4.00000000000000000
 # start date
 22-04-2015
 # start time

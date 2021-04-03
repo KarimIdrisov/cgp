@@ -3,7 +3,7 @@
 # samples number
      15706
 # sampling rate
-1.15741e-005
+0.0000115741
 # start date
 01-01-1970
 # start time

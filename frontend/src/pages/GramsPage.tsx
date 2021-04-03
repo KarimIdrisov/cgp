@@ -2,8 +2,8 @@ import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import Layout from "../components/Layout";
 import axios from "axios";
-import Graphic from "../components/Graphic";
 import Oscillogram from "../components/Oscillogram";
+import Navigator from "../components/Navigator";
 
 import {useHistory} from "react-router-dom";
 import Typography from "@material-ui/core/Typography";
@@ -18,6 +18,7 @@ import {
     TextField
 } from "@material-ui/core";
 import {useAlert} from "react-alert";
+import Minigram from "../components/Minigram";
 
 const useStyles = makeStyles((theme) => ({
     markdown: {
@@ -44,6 +45,13 @@ const useStyles = makeStyles((theme) => ({
     },
     fragment: {
         display: "flex",
+    },
+    abs: {
+        marginTop: '40px',
+        marginBottom: '40px',
+        position: 'relative',
+        height: '160px',
+        width: '100%'
     }
 }));
 
@@ -122,6 +130,13 @@ export default function GramsPage(props: any) {
         setAnchorTools(null)
     }
 
+    function handleChange(event: any) {
+        if (event !== undefined) {
+            setMin(event.min)
+            setMax(event.max)
+        }
+    }
+
     return (
         <Layout file={file}>
             <Menu
@@ -140,18 +155,13 @@ export default function GramsPage(props: any) {
                     <Typography variant="h6">Инструменты</Typography>
                 </Button>
             </div>
-            {(data?.channelsName.map((channel: string, number) => (
-                <>
-                    <Graphic key={number} id={data?.channelsName[number]} file={file}/>
-                </>
-            )))}
-            {/*{(reqChannels.split(";").map((channel: string, number: number) => (*/}
-            {/*    <div id={channel} key={number} style={{width: "1000px", height: "500px"}}> </div>*/}
-            {/*)))}*/}
+            <div className={classes.abs}>
+                <Navigator/>
+                <Minigram func={handleChange} min={min} max={max} file={file} id={reqChannels.split(";")[0]}/>
+            </div>
             {(reqChannels.split(";").map((channel: string, number: number) => (
-                <Oscillogram min={min} max={max} file={file} id={channel} key={number}/>
+                <Oscillogram func={handleChange} min={min} max={max} file={file} id={channel} key={number}/>
             )))}
-
             <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Отсчеты</DialogTitle>
                 <DialogContent className={classes.fragment}>
@@ -183,7 +193,6 @@ export default function GramsPage(props: any) {
                     </Button>
                 </DialogActions>
             </Dialog>
-
         </Layout>
     );
 }

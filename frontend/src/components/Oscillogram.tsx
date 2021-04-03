@@ -1,12 +1,12 @@
 import {makeStyles} from '@material-ui/core/styles';
-import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from "axios";
 
 import Highcharts from 'highcharts/highstock'
 import HighchartsReact from 'highcharts-react-official';
 
-import {Button, IconButton} from "@material-ui/core";
-import { useHistory } from "react-router-dom";
+import {Button} from "@material-ui/core";
+import {useHistory} from "react-router-dom";
 
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import TimelineIcon from '@material-ui/icons/Timeline';
@@ -29,7 +29,9 @@ const useStyles = makeStyles((theme) => ({
 
 interface Signal {
     signalData: number[],
-    times: Date[]
+    times: Date[],
+    dateTimes: Date[],
+    interval: number
 }
 
 export default function Oscillogram(props: any) {
@@ -44,8 +46,10 @@ export default function Oscillogram(props: any) {
             plotOptions: {
                 series: {
                     marker: {
-                        enabled: showMarkers
-                    }
+                        enabled: showMarkers,
+
+                    },
+
                 }
             },
             chart: {
@@ -58,27 +62,39 @@ export default function Oscillogram(props: any) {
                 title: {
                     text: 'Время'
                 },
-                categories: signal.times.slice(props.min, props.max),
+                categories: signal.dateTimes.slice(props.min, props.max),
                 type: 'datetime',
                 resize: {
                     enabled: false
                 },
-
+                tickInterval: 50,
+                gridLineWidth: 1,
+                labels: {
+                    //@ts-ignore
+                    formatter: function () {
+                        //@ts-ignore
+                        return new Date(this.value).getHours() + ':' + new Date(this.value).getMinutes() + ':' + new Date(this.value).getSeconds()
+                    }
+                },
             },
             yAxis: {
                 title: {
                     text: 'F(x)'
                 },
                 type: 'linear',
+                gridLineWidth: 1
             },
             series: [{
                 name: props.id,
                 data: signal.signalData.slice(props.min, props.max),
                 dataGrouping: {
-                    enabled: false
+                    enabled: true
                 },
-                type: 'spline'
-            }]
+                type: 'spline',
+            }],
+            // data: {
+            //     dateFormat: 'YYYY/mm/dd'
+            // }
         };
     }
 
@@ -87,7 +103,6 @@ export default function Oscillogram(props: any) {
     function deleteOscillogram() {
         const oldChannels = window.location.href.slice(28)
         const newChannels = oldChannels.split(';').filter(item => props.id !== item)
-        console.log(newChannels)
         if (newChannels.length === 0) {
             history.push('/modeling/' + localStorage.getItem("file"))
         } else {
@@ -96,7 +111,7 @@ export default function Oscillogram(props: any) {
     }
 
     function turnInterpolation() {
-        if(!showMarkers) {
+        if (!showMarkers) {
             setShow(true)
         } else {
             setShow(false)
@@ -108,12 +123,14 @@ export default function Oscillogram(props: any) {
             const result = await axios.get('http://localhost:3081/get-signal-sidebar/?file=' + props.file + "&signal=" + props.id);
             setSignal({
                 signalData: result.data.signalData,
-                times: result.data.times
+                times: result.data.times,
+                dateTimes: result.data.dateTimes,
+                interval: result.data.interval
             });
         }
 
         getData();
-
+        console.log()
     }, [])
 
     return (
@@ -128,7 +145,7 @@ export default function Oscillogram(props: any) {
                                 <DeleteForeverIcon/>
                             </Button>
                         </div>
-                        <HighchartsReact constructorType={'stockChart'} highcharts={Highcharts} options={options}/>
+                        <HighchartsReact constructorType={'chart'} highcharts={Highcharts} options={options}/>
                     </>)
                 : <></>}
         </>

@@ -1,7 +1,8 @@
 import {makeStyles} from '@material-ui/core/styles';
 import React, {useEffect, useState} from 'react';
 import axios from "axios";
-
+import {LineSegment, VictoryAxis, VictoryChart, VictoryLine, VictoryTheme} from "victory";
+import {Menu, MenuItem, Typography} from "@material-ui/core";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -12,78 +13,62 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Graphic(props: any) {
     const classes = useStyles();
-    const [signal, setSignal] = useState({
-        signalData: Array,
-        times: Array,
-    });
+    const [signal, setSignal] = useState();
 
-    const [loading, setLoading] = useState(false)
-
-    useEffect( () => {
-        setLoading(true)
+    useEffect(() => {
         async function getData() {
-            const result = await axios.get('http://localhost:3081/get-signal-sidebar/?file=' + props.file + "&signal=" + props.id);
-            setSignal({
-                signalData: result.data.signalData,
-                times: result.data.times
-            });
+            const result = await axios.get('http://localhost:3081/get-osciologram/?file=' + props.file + "&signal=" + props.id);
+            setSignal(result.data);
         }
 
         getData();
-        setLoading(false)
-
     }, [])
 
-    if (!loading) {
+    const [anchorEl, setAnchorEl] = React.useState(null);
 
-        const Chart = require('chart.js');
-        const ctx = document.getElementById(props.id.toString());
-        const myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: signal.times,
-                datasets: [{
-                    label: props.id,
-                    data: signal.signalData,
-                    borderColor: [
-                        'rgb(72,70,70)'
-                    ],
-                    pointStyle: "line",
-                    tension: "0.1",
-                    cubicInterpolationMode: "monotone",
-                    fill: "false",
-                }]
-            },
-            options: {
-                tooltips: {enabled: false},
-                scales: {
-                    xAxes: [ {
-                        ticks: {
-                            display: true,
-                            stepSize: 10000
-                        }
-                    } ],
-                    yAxes: [ {
-                        ticks: {
-                            display: false,
-                            stepSize: 10000
-                        }
-                    } ]
-                },
-                animation: {
-                    duration: 0 // general animation time
-                },
-                hover: {
-                    animationDuration: 0,
-                    mode: null// duration of animations when hovering an item
-                },
-                responsiveAnimationDuration: 0 // animation duration after a resize
+    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        // @ts-ignore
+        setAnchorEl(event.currentTarget);
+    };
 
-            }
-        });
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    function addGraphic() {
+        props.func(props.id)
     }
 
     return (
-        <></>
+        <div>
+            <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+                <MenuItem onClick={addGraphic}>Осцилограмма</MenuItem>
+            </Menu>
+            <div aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+                <Typography style={{textAlign: 'center'}}>{props.id}</Typography>
+                <VictoryChart>
+                    <VictoryLine data={signal} style={{
+                        data: { stroke: "black" },
+                        parent: { border: "1px solid #ccc"}
+                    }}/>
+                    <VictoryAxis crossAxis
+                                 width={400}
+                                 height={400}
+                                 theme={VictoryTheme.material}
+                                 offsetY={50}
+                                 standalone={false}
+                                 label="Time (ms)"
+                                 orientation="bottom"
+                    />
+                    <VictoryAxis dependentAxis crossAxis
+                                 width={400}
+                                 height={400}
+                                 theme={VictoryTheme.material}
+                                 offsetX={50}
+                                 standalone={false}
+                    />
+                </VictoryChart>
+            </div>
+        </div>
     );
 }

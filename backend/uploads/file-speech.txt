@@ -3,7 +3,7 @@
 # samples number
      41911
 # sampling rate
-8.19200000000000000e+03
+8192.00000000000000
 # start date
 06-06-2020
 # start time

@@ -16,6 +16,7 @@ function App() {
             <Router>
                 <Switch>
                     <Route path="/grams/:channels" component={GramsPage}/>
+                    {/*<Route path="/modeling/" component={ModelingPage}/>*/}
                     <Route path="/modeling/:filename" component={ModelingPage}/>
                     <Route path="/file" component={FilePage}/>
                     <Route path="/" component={HomePage}/>

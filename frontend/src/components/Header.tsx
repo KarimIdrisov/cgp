@@ -12,7 +12,7 @@ import {
     DialogContentText,
     DialogTitle,
     Menu,
-    MenuItem
+    MenuItem, TextField
 } from "@material-ui/core";
 import axios from "axios";
 import clsx from "clsx";
@@ -94,8 +94,15 @@ export default function Header(props: { title: any, file : any }) {
     const title = props.title;
     const history = useHistory();
 
+    const [argument, setArgument] = useState(1)
+    const [discrete, setDiscrete] = useState(1)
+    const [interval, setInterval] = useState(1)
+    const [signals, setSignals] = useState([])
+    const [current, setCurrent] = useState('')
+
     const [anchorFile, setAnchorFile] = React.useState<null | HTMLElement>(null);
     const [anchorGrams, setAnchorGrams] = React.useState<null | HTMLElement>(null);
+    const [anchorModels, setAnchorModels] = React.useState<null | HTMLElement>(null);
 
     const handleClickFile = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorFile(event.currentTarget);
@@ -104,9 +111,18 @@ export default function Header(props: { title: any, file : any }) {
     const handleClickGrams = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorGrams(event.currentTarget);
     };
+
+    const handleClickModels = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorModels(event.currentTarget);
+        if (!window.location.href.includes("model")) {
+            history.push('/modeling/')
+        }
+    };
+
     const handleClose = () => {
         setAnchorFile(null);
         setAnchorGrams(null);
+        setAnchorModels(null)
     };
 
     const [data, setData] = useState<Data>()
@@ -122,21 +138,26 @@ export default function Header(props: { title: any, file : any }) {
     }, [setData]);
 
     function getInfo() {
-        setOpen(true);
+        setOpenInfo(true);
         setAnchorFile(null);
     }
 
-    const [open, setOpen] = React.useState(false);
+    const [openInfo, setOpenInfo] = React.useState(false);
+    const [openModels, setOpenModels] = React.useState(false);
+    const [openComplexModels, setOpenComplexModels] = React.useState(false);
+
+
 
     const handleCloseDialog = () => {
-        setOpen(false);
+        setOpenInfo(false);
+        setOpenModels(false);
+        setOpenComplexModels(false);
     };
 
     const newOscillogram = (event: React.MouseEvent<HTMLLIElement>) => {
         // @ts-ignore
         const channel = event.target.id;
         setAnchorGrams(null);
-        console.log(channel)
         if (!window.location.href.includes("grams")) {
             history.push("/grams/" + channel);
         } else {
@@ -150,10 +171,48 @@ export default function Header(props: { title: any, file : any }) {
         }
     }
 
+    function newSignal(event: React.MouseEvent<HTMLLIElement>) {
+        //@ts-ignore
+        setCurrent(event.target.id)
+        setAnchorModels(null);
+        setOpenModels(true);
+    }
+
+    function newComplexSignal(event: React.MouseEvent<HTMLLIElement>) {
+        //@ts-ignore
+        setCurrent(event.target.id)
+        setAnchorModels(null)
+        setOpenComplexModels(true)
+    }
+    function getNewSignal() {
+        setOpenModels(false);
+        //@ts-ignore
+        const oldSignals = JSON.parse(localStorage.getItem('models'))
+        //@ts-ignore
+        setSignals([{name: current, args: argument}])
+        if (oldSignals !== null) {
+            //@ts-ignore
+            localStorage.setItem('models', JSON.stringify(signals.concat(oldSignals)))
+        } else if (signals.length > 0) {
+            localStorage.setItem('models', JSON.stringify(signals))
+        }
+    }
+    function getNewComplexSignal() {
+        setOpenComplexModels(false);
+        //@ts-ignore
+        setSignals(signals.concat([{name: current, args: discrete + ':' + interval}]))
+    }
+
+    function deleteSignals() {
+        console.log("calls")
+        setSignals([])
+        setAnchorModels(null)
+    }
+
     return (
         <React.Fragment>
             <Dialog
-                open={open}
+                open={openInfo}
                 onClose={handleClose}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description">
@@ -177,6 +236,62 @@ export default function Header(props: { title: any, file : any }) {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Dialog open={openModels} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Дискретный аргумент"
+                        type="number"
+                        defaultValue={argument}
+                        onChange={num => setArgument(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={getNewSignal} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openComplexModels} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Частота дискретизации"
+                        type="number"
+                        defaultValue={discrete}
+                        onChange={num => setDiscrete(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Временный интервал"
+                        type="number"
+                        defaultValue={interval}
+                        onChange={num => setInterval(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={getNewComplexSignal} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Toolbar className={classes.toolbar}>
                 <Link color="inherit" className={classes.toolbarLink} to="/">
                     <Typography component="h2" variant="h5" color="inherit" align="center"
@@ -196,6 +311,10 @@ export default function Header(props: { title: any, file : any }) {
                 <Button color="inherit" aria-controls="grams" aria-haspopup="true" onClick={handleClickGrams}
                         className={classes.grams}>
                     <Typography variant="h6">Осцилограммы</Typography>
+                </Button>
+                <Button color="inherit" aria-controls="models" aria-haspopup="true" onClick={handleClickModels}
+                        className={classes.grams}>
+                    <Typography variant="h6">Моделирование</Typography>
                 </Button>
                 {sections.map((section: Section, number) => (
                     <Link color="inherit" key={number} to={section.url}
@@ -223,6 +342,24 @@ export default function Header(props: { title: any, file : any }) {
                 <Link color="inherit" to={"/file"}
                       className={classes.Link}><MenuItem onClick={handleClose}>Загрузить файл</MenuItem></Link>
                 <MenuItem onClick={getInfo}>Информация о файле</MenuItem>
+            </Menu>
+            <Menu
+                id="models"
+                anchorEl={anchorModels}
+                keepMounted
+                open={Boolean(anchorModels)}
+                onClose={handleClose}>
+                <MenuItem onClick={deleteSignals}>Удалить все сигналы</MenuItem>
+                <MenuItem onClick={newSignal} id={'impulse'}>Задержанный единичный имульс</MenuItem>
+                <MenuItem onClick={newSignal} id={'jump'}>Задержанный единичный скачок </MenuItem>
+                <MenuItem onClick={newSignal} id={'exponent'}>Дискретизированная убывающая экспонента</MenuItem>
+                <MenuItem onClick={newSignal} id={'sin'}>Дискретизированная синусоида</MenuItem>
+                <MenuItem onClick={newSignal} id={'meandr'}>«Меандр» с периодом L </MenuItem>
+                <MenuItem onClick={newSignal} id={'pila'}>“Пила” с периодом L</MenuItem>
+                <MenuItem onClick={newComplexSignal} id={'exp_ogub'}>Сигнал с экспоненциальной огибающей </MenuItem>
+                <MenuItem onClick={newComplexSignal} id={'balance_ogib'}>Сигнал с балансной огибающей </MenuItem>
+                <MenuItem onClick={newComplexSignal} id={'tonal_ogib'}>Сигнал с тональной огибающей</MenuItem>
+                <MenuItem onClick={newComplexSignal} id={'linear_modul'}>Сигнал с линейной частотной модуляцией</MenuItem>
             </Menu>
         </React.Fragment>
     );

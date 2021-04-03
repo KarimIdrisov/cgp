@@ -4,17 +4,20 @@ import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import axios from "axios";
 import {Menu, MenuItem} from "@material-ui/core";
-import { useHistory } from "react-router-dom";
+import {useHistory} from "react-router-dom";
+
+import NewModelGraphic from "./NewModelGraphic"
+import Graphic from "./Graphic";
 
 
-const drawerWidth = 350;
+const drawerWidth = 380;
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
             display: 'flex',
             marginTop: "1px",
-            marginRight: "60px"
+            paddingRight: "50px"
         },
         appBar: {
             width: `calc(100% - ${drawerWidth}px)`,
@@ -23,13 +26,14 @@ const useStyles = makeStyles((theme: Theme) =>
         drawer: {
             width: drawerWidth,
             flexShrink: 0,
+            padding: "10px"
         },
         drawerPaper: {
             width: drawerWidth,
             display: "flex",
-            alignItems: "center",
             paddingTop: "50px",
             paddingBottom: "50px",
+            paddingRight: "30px",
         },
         // necessary for content to be below app bar
         toolbar: theme.mixins.toolbar,
@@ -54,11 +58,17 @@ interface Data {
     channelsName: Array<string>,
 }
 
+interface Model {
+    name: string,
+    args: string
+}
+
 export default function PermanentDrawerRight(props: any) {
     const classes = useStyles();
     const history = useHistory();
 
     const [data, setData] = useState<Data>()
+    const [newModels, setNewModels] = useState<Array<any>>()
 
     useEffect(() => {
         async function getData() {
@@ -67,14 +77,13 @@ export default function PermanentDrawerRight(props: any) {
         }
 
         getData();
+        // @ts-ignore
+        setNewModels(JSON.parse(localStorage.getItem('models')))
+        // @ts-ignore
+        console.log(localStorage.getItem('models'))
     }, [setData]);
 
     const [anchorEl, setAnchorEl] = React.useState(null);
-
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-        // @ts-ignore
-        setAnchorEl(event.currentTarget);
-    };
 
     const handleClose = () => {
         setAnchorEl(null);
@@ -88,7 +97,6 @@ export default function PermanentDrawerRight(props: any) {
             history.push("/grams/" + channel);
         } else {
             const oldChannels = window.location.href.slice(28)
-            console.log(oldChannels)
             if (oldChannels.length === 0) {
                 history.push("/grams/" + channel)
             }
@@ -96,8 +104,24 @@ export default function PermanentDrawerRight(props: any) {
                 history.push('/grams/' + oldChannels + ';' + channel);
             }
         }
-
     }
+
+    function newOscillogramByGraph(channel: string) {
+        setAnchorEl(null);
+        if (!window.location.href.includes("grams")) {
+            history.push("/grams/" + channel);
+        } else {
+            const oldChannels = window.location.href.slice(28)
+            if (oldChannels.length === 0) {
+                history.push("/grams/" + channel)
+            }
+            if (!oldChannels.includes(channel)) {
+                history.push('/grams/' + oldChannels + ';' + channel);
+            }
+        }
+    }
+
+    // console.log("render")
 
     return (
         <div className={classes.root}>
@@ -107,10 +131,13 @@ export default function PermanentDrawerRight(props: any) {
             <CssBaseline/>
             <Drawer className={classes.drawer} variant="permanent" classes={{paper: classes.drawerPaper}}
                     anchor="right">
+                {newModels?.map((model: Model, number: number) => (
+                    <NewModelGraphic aria-controls="simple-menu" aria-haspopup="true"
+                             id={model.name} args={model.args} key={number}/>
+                ))}
                 {data?.channelsName.map((channel, number) => (
-                    <div aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick} key={number}>
-                        <canvas id={channel} className={classes.canvas}/>
-                    </div>
+                    <Graphic aria-controls="simple-menu" aria-haspopup="true" func={newOscillogramByGraph}
+                             file={props.file} id={channel} key={number}/>
                 ))}
             </Drawer>
         </div>
