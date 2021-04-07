@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import Layout from "../components/Layout";
 import axios from "axios";
-import Graphic from "../components/Graphic";
 
 const useStyles = makeStyles((theme) => ({
     markdown: {

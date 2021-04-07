@@ -1,15 +1,6 @@
-import {makeStyles} from '@material-ui/core/styles';
 import React, {useEffect, useState} from 'react';
 import {VictoryAxis, VictoryChart, VictoryLine, VictoryTheme} from "victory";
 import {Typography} from "@material-ui/core";
-import axios from "axios";
-
-
-const useStyles = makeStyles((theme) => ({
-    border: {
-        border: "1px solid black",
-    },
-}));
 
 export default function NewModelGraphic(props: any) {
 
@@ -23,8 +14,6 @@ export default function NewModelGraphic(props: any) {
     if (data === undefined && props.id === 'impulse') {
         setData([{x: props.args, y: 1}, {x: props.args, y: 0}])
     }
-
-    console.log(data)
 
     return (
         <div>

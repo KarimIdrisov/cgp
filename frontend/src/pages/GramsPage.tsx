@@ -1,17 +1,14 @@
-import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import Layout from "../components/Layout";
 import axios from "axios";
 import Oscillogram from "../components/Oscillogram";
-import Navigator from "../components/Navigator";
 
-import {useHistory} from "react-router-dom";
 import Typography from "@material-ui/core/Typography";
 import {
     Button,
     Dialog, DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     Menu,
     MenuItem,
@@ -19,6 +16,8 @@ import {
 } from "@material-ui/core";
 import {useAlert} from "react-alert";
 import Minigram from "../components/Minigram";
+import clsx from "clsx";
+import TimelineIcon from "@material-ui/icons/Timeline";
 
 const useStyles = makeStyles((theme) => ({
     markdown: {
@@ -47,11 +46,12 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
     },
     abs: {
-        marginTop: '40px',
-        marginBottom: '40px',
-        position: 'relative',
-        height: '160px',
+        marginTop: '20px',
+        marginBottom: '20px',
         width: '100%'
+    },
+    active: {
+        backgroundColor: "gray"
     }
 }));
 
@@ -72,14 +72,13 @@ export default function GramsPage(props: any) {
     const [data, setData] = useState<Data>()
     const file = localStorage.getItem("file")
     const reqChannels = props.match.params.channels
-    const history = useHistory();
     const [open, setOpen] = React.useState(false);
     const [min, setMin] = useState(data?.min)
     const [max, setMax] = useState(data?.max)
     const [valueMin, setMinValue] = useState(0)
     const [valueMax, setMaxValue] = useState(0)
     const alert = useAlert()
-
+    const [showMarkers, setShow] = useState(false)
 
     const [anchorTools, setAnchorTools] = React.useState<null | HTMLElement>(null);
 
@@ -137,6 +136,14 @@ export default function GramsPage(props: any) {
         }
     }
 
+    function turnInterpolation() {
+        if (!showMarkers) {
+            setShow(true)
+        } else {
+            setShow(false)
+        }
+    }
+
     return (
         <Layout file={file}>
             <Menu
@@ -154,13 +161,16 @@ export default function GramsPage(props: any) {
                         className={classes.btn}>
                     <Typography variant="h6">Инструменты</Typography>
                 </Button>
+                <Button className={clsx({[classes.active]: showMarkers})} onClick={turnInterpolation}>
+                    <TimelineIcon/>
+                </Button>
             </div>
             <div className={classes.abs}>
-                <Navigator/>
-                <Minigram func={handleChange} min={min} max={max} file={file} id={reqChannels.split(";")[0]}/>
+                <Minigram func={handleChange} file={file} id={reqChannels.split(";")[0]}/>
             </div>
             {(reqChannels.split(";").map((channel: string, number: number) => (
-                <Oscillogram func={handleChange} min={min} max={max} file={file} id={channel} key={number}/>
+                <Oscillogram showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file} id={channel}
+                             key={number}/>
             )))}
             <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Отсчеты</DialogTitle>

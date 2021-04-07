@@ -6,7 +6,6 @@ import Header from './Header';
 import Footer from './Footer';
 import Sidebar from "./Sidebar";
 
-
 const useStyles = makeStyles((theme) => ({
     mainGrid: {
         marginTop: theme.spacing(3),
@@ -27,7 +26,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Layout(props: any) {
     const classes = useStyles();
-    console.log("render")
 
     if(window.location.href.includes('modeling') || window.location.href.includes("grams")) {
         const file = props.file

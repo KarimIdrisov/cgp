@@ -31,17 +31,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
-  post: Post
-}
-
-interface Post {
-  title: String,
-  description: String,
-  imgText: String
-}
-
-export default function MainContent(props: Props) {
+export default function MainContent() {
   const classes = useStyles();
 
   return (

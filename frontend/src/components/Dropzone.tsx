@@ -22,7 +22,6 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-
 export default function MainContent(props: any) {
     const classes = useStyles();
     const history = useHistory();

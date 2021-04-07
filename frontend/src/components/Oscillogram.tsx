@@ -9,8 +9,6 @@ import {Button} from "@material-ui/core";
 import {useHistory} from "react-router-dom";
 
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
-import TimelineIcon from '@material-ui/icons/Timeline';
-import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
     border: {
@@ -22,9 +20,6 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: 'row',
         justifyContent: 'flex-end'
     },
-    active: {
-        backgroundColor: "gray"
-    }
 }));
 
 interface Signal {
@@ -38,7 +33,6 @@ export default function Oscillogram(props: any) {
     const classes = useStyles();
     const [signal, setSignal] = useState<Signal | any>();
     const history = useHistory();
-    const [showMarkers, setShow] = useState(false)
 
     let options = {}
     if (signal) {
@@ -46,17 +40,18 @@ export default function Oscillogram(props: any) {
             plotOptions: {
                 series: {
                     marker: {
-                        enabled: showMarkers,
-
+                        enabled: props.showMarkers,
                     },
-
                 }
             },
             chart: {
                 zoomType: "xy"
             },
             title: {
-                text: props.id
+                text: ''
+            },
+            legend: {
+                enabled: false
             },
             xAxis: {
                 title: {
@@ -92,13 +87,8 @@ export default function Oscillogram(props: any) {
                 },
                 type: 'spline',
             }],
-            // data: {
-            //     dateFormat: 'YYYY/mm/dd'
-            // }
         };
     }
-
-    // console.log(signal.signalData.slice(props.min, props.max),props.min, props.max)
 
     function deleteOscillogram() {
         const oldChannels = window.location.href.slice(28)
@@ -107,14 +97,6 @@ export default function Oscillogram(props: any) {
             history.push('/modeling/' + localStorage.getItem("file"))
         } else {
             history.push('/grams/' + newChannels.join(';'))
-        }
-    }
-
-    function turnInterpolation() {
-        if (!showMarkers) {
-            setShow(true)
-        } else {
-            setShow(false)
         }
     }
 
@@ -137,14 +119,6 @@ export default function Oscillogram(props: any) {
         <>
             {(signal?.signalData && signal.signalData.length > 1) ? (
                     <>
-                        <div className={classes.toolbar}>
-                            <Button className={clsx({[classes.active]: showMarkers})} onClick={turnInterpolation}>
-                                <TimelineIcon/>
-                            </Button>
-                            <Button onClick={deleteOscillogram}>
-                                <DeleteForeverIcon/>
-                            </Button>
-                        </div>
                         <HighchartsReact constructorType={'chart'} highcharts={Highcharts} options={options}/>
                     </>)
                 : <></>}

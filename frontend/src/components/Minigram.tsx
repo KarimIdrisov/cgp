@@ -1,5 +1,5 @@
 import {makeStyles} from '@material-ui/core/styles';
-import React, {createRef, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from "axios";
 
 import Highcharts from 'highcharts/highstock'
@@ -22,7 +22,6 @@ const useStyles = makeStyles((theme) => ({
     },
     gram: {
         width: "100%",
-        position: 'absolute'
     }
 }));
 
@@ -35,8 +34,6 @@ interface Signal {
 export default function Minigram(this: any, props: any) {
     const classes = useStyles();
     const [signal, setSignal] = useState<Signal | any>();
-    const history = useHistory();
-    const [showMarkers, setShow] = useState(false)
     const [send, setState] = useState(false)
 
     let options = {}
@@ -44,10 +41,6 @@ export default function Minigram(this: any, props: any) {
         options = {
             plotOptions: {
                 series: {
-                    marker: {
-                        enabled: showMarkers,
-
-                    },
                     states: {
                         hover: {
                             enabled: false
@@ -59,7 +52,7 @@ export default function Minigram(this: any, props: any) {
                 }
             },
             chart: {
-                height: "180px",
+                height: "100px",
                 borderColor: 'white'
             },
             title: {
@@ -70,7 +63,7 @@ export default function Minigram(this: any, props: any) {
                 ordinal: false,
                 lineColor: "gray",
                 lineWidth: 1,
-                categories: signal.dateTimes.slice(props.min, props.max),
+                categories: signal.dateTimes,
                 type: 'datetime',
                 resize: {
                     enabled: true
@@ -88,7 +81,7 @@ export default function Minigram(this: any, props: any) {
                 max: props.max,
                 events: {
                     // eslint-disable-next-line no-restricted-globals
-                    afterSetExtremes: function (event: any){
+                    afterSetExtremes: function (event: any) {
                         handleChange(event)
                     },
                 }
@@ -107,7 +100,7 @@ export default function Minigram(this: any, props: any) {
             },
             series: [{
                 name: props.id,
-                data: signal.signalData.slice(props.min, props.max),
+                data: signal.signalData,
                 dataGrouping: {
                     enabled: false
                 },
@@ -141,14 +134,13 @@ export default function Minigram(this: any, props: any) {
                         duration: 0,
                     },
                 },
-                height: 100,
+                height: 30,
                 xAxis: {
                     ordinal: false,
                     labels: {
                         enabled: false
                     }
                 },
-
             },
             lineWidth: 0,
             marker: {
@@ -179,6 +171,7 @@ export default function Minigram(this: any, props: any) {
             setState(false)
         }
     }
+
     function handleChange(e: any) {
         if (send) {
             console.log(1)
@@ -193,8 +186,6 @@ export default function Minigram(this: any, props: any) {
         }
     }
 
-
-    console.log(send)
     return (
         <div className={classes.gram} onMouseDown={handleRange} onMouseUp={sendExtremas}>
             {(signal?.signalData && signal.signalData.length > 1) ? (

@@ -17,8 +17,6 @@ import {
 import axios from "axios";
 import clsx from "clsx";
 
-
-
 const useStyles = makeStyles((theme) => ({
     toolbar: {
         borderBottom: `1px solid ${theme.palette.divider}`,
@@ -42,7 +40,6 @@ const useStyles = makeStyles((theme) => ({
         height: "30px",
         width: "100px",
         textTransform: "none",
-
     },
     Link: {
         textDecoration: 'none',
@@ -87,7 +84,6 @@ const sections = [
     {title: 'Фильтрация', url: '#'},
     {title: 'Настройки', url: '#'},
 ];
-
 
 export default function Header(props: { title: any, file : any }) {
     const classes = useStyles();
@@ -146,8 +142,6 @@ export default function Header(props: { title: any, file : any }) {
     const [openModels, setOpenModels] = React.useState(false);
     const [openComplexModels, setOpenComplexModels] = React.useState(false);
 
-
-
     const handleCloseDialog = () => {
         setOpenInfo(false);
         setOpenModels(false);
@@ -184,6 +178,7 @@ export default function Header(props: { title: any, file : any }) {
         setAnchorModels(null)
         setOpenComplexModels(true)
     }
+
     function getNewSignal() {
         setOpenModels(false);
         //@ts-ignore
@@ -197,6 +192,7 @@ export default function Header(props: { title: any, file : any }) {
             localStorage.setItem('models', JSON.stringify(signals))
         }
     }
+
     function getNewComplexSignal() {
         setOpenComplexModels(false);
         //@ts-ignore

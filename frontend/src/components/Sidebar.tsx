@@ -9,8 +9,7 @@ import {useHistory} from "react-router-dom";
 import NewModelGraphic from "./NewModelGraphic"
 import Graphic from "./Graphic";
 
-
-const drawerWidth = 380;
+const drawerWidth = 350;
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -51,7 +50,6 @@ const useStyles = makeStyles((theme: Theme) =>
         },
     }),
 );
-
 
 interface Data {
     channelsNumber: number,
@@ -121,8 +119,6 @@ export default function PermanentDrawerRight(props: any) {
         }
     }
 
-    // console.log("render")
-
     return (
         <div className={classes.root}>
             <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
@@ -133,7 +129,7 @@ export default function PermanentDrawerRight(props: any) {
                     anchor="right">
                 {newModels?.map((model: Model, number: number) => (
                     <NewModelGraphic aria-controls="simple-menu" aria-haspopup="true"
-                             id={model.name} args={model.args} key={number}/>
+                                     id={model.name} args={model.args} key={number}/>
                 ))}
                 {data?.channelsName.map((channel, number) => (
                     <Graphic aria-controls="simple-menu" aria-haspopup="true" func={newOscillogramByGraph}
