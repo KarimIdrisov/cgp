@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
@@ -26,6 +26,11 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Layout(props: any) {
     const classes = useStyles();
+    const [redraw, setRedraw] = useState<number>()
+
+    function refresh() {
+        setRedraw(Date.now())
+    }
 
     if(window.location.href.includes('modeling') || window.location.href.includes("grams")) {
         const file = props.file
@@ -33,8 +38,8 @@ export default function Layout(props: any) {
             <React.Fragment>
                 <CssBaseline/>
                 <Container className={classes.container}>
-                    <Sidebar file={file}/>
-                    <Header title="CGP - DSP" file={file}/>
+                    <Sidebar file={file} update={refresh}/>
+                    <Header title="CGP - DSP" file={file} update={refresh}/>
                     <main className={classes.main}>
                         {props.children}
                     </main>
@@ -48,7 +53,7 @@ export default function Layout(props: any) {
         <React.Fragment>
             <CssBaseline/>
             <Container maxWidth={"lg"}>
-                <Header title="CGP - DSP" file={null}/>
+                <Header title="CGP - DSP" file={null} update={null}/>
                 <main className={classes.main}>
                     {props.children}
                 </main>

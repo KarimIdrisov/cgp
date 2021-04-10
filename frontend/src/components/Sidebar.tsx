@@ -54,6 +54,8 @@ const useStyles = makeStyles((theme: Theme) =>
 interface Data {
     channelsNumber: number,
     channelsName: Array<string>,
+    samples: number,
+    f: number
 }
 
 interface Model {
@@ -67,6 +69,8 @@ export default function PermanentDrawerRight(props: any) {
 
     const [data, setData] = useState<Data>()
     const [newModels, setNewModels] = useState<Array<any>>()
+    const [f, setF] = useState(0)
+    const [samples, setSamples] = useState(0)
 
     useEffect(() => {
         async function getData() {
@@ -78,8 +82,33 @@ export default function PermanentDrawerRight(props: any) {
         // @ts-ignore
         setNewModels(JSON.parse(localStorage.getItem('models')))
         // @ts-ignore
-        console.log(localStorage.getItem('models'))
-    }, [setData]);
+    }, [setData, setNewModels]);
+
+    if (!window.location.href.includes("txt") && !window.location.href.includes("grams") && f === 0) {
+        // @ts-ignore
+        setF(+localStorage.getItem("fd"))
+    } else if ( (window.location.href.includes("txt") || window.location.href.includes("grams")) && f === 0) {
+        if (data?.f !== undefined) {
+            // @ts-ignore
+            setF(data?.f)
+        }
+    }
+
+    if (!window.location.href.includes("txt") && !window.location.href.includes("grams") && samples === 0) {
+        // @ts-ignore
+        setSamples(+localStorage.getItem("samples"))
+    } else if ( (window.location.href.includes("txt") || window.location.href.includes("grams")) && samples === 0) {
+        if (data?.f !== undefined) {
+            // @ts-ignore
+            setSamples(data?.samples)
+        }
+    }
+
+    if (JSON.parse(localStorage.getItem('models') as string)?.length !== newModels?.length) {
+        // @ts-ignore
+        setNewModels(JSON.parse(localStorage.getItem('models')))
+        props.update()
+    }
 
     const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -127,9 +156,9 @@ export default function PermanentDrawerRight(props: any) {
             <CssBaseline/>
             <Drawer className={classes.drawer} variant="permanent" classes={{paper: classes.drawerPaper}}
                     anchor="right">
-                {newModels?.map((model: Model, number: number) => (
-                    <NewModelGraphic aria-controls="simple-menu" aria-haspopup="true"
-                                     id={model.name} args={model.args} key={number}/>
+                {newModels?.map((model: Model, number) => (
+                    <NewModelGraphic aria-controls="simple-menu" aria-haspopup="true" file={props.file} num={number}
+                                     id={model.name} args={model.args} key={model.args} fd={f} samples={samples}/>
                 ))}
                 {data?.channelsName.map((channel, number) => (
                     <Graphic aria-controls="simple-menu" aria-haspopup="true" func={newOscillogramByGraph}

@@ -29,11 +29,16 @@ app.get('/channels', (req, res) => {
         const lines = data.split(/\r?\n/);
 
         const channelsNumber = lines[1];
+        const samplesNumber = lines[3];
+        const samplingRate = lines[5];
+        console.log(+samplesNumber)
         let channelsName = lines[11].split(';');
         channelsName = channelsName.slice(0, +channelsNumber);
         res.json({
             channelsNumber: channelsNumber,
             channelsName: channelsName,
+            samples: +samplesNumber,
+            f: +samplingRate
         });
     })
 });
@@ -210,7 +215,11 @@ app.get('/model-data', (req, res) => {
     })
 });
 
-app.post('/upload', function (req, res) {
+app.post("/sendModels", function (request, response) {
+    console.log(request.data);
+});
+
+app.post('/send_data', function (req, res) {
 
     upload(req, res, function (err) {
         if (err instanceof multer.MulterError) {

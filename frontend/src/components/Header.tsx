@@ -16,6 +16,7 @@ import {
 } from "@material-ui/core";
 import axios from "axios";
 import clsx from "clsx";
+import {Alert, AlertTitle} from "@material-ui/lab";
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -59,6 +60,9 @@ const useStyles = makeStyles((theme) => ({
         width: "200px",
         margin: "auto",
         textTransform: 'none',
+    },
+    hide: {
+        display: 'none'
     }
 }));
 
@@ -85,7 +89,7 @@ const sections = [
     {title: 'Настройки', url: '#'},
 ];
 
-export default function Header(props: { title: any, file : any }) {
+export default function Header(props: { title: any, file: any, update: any }) {
     const classes = useStyles();
     const title = props.title;
     const history = useHistory();
@@ -93,12 +97,21 @@ export default function Header(props: { title: any, file : any }) {
     const [argument, setArgument] = useState(1)
     const [discrete, setDiscrete] = useState(1)
     const [interval, setInterval] = useState(1)
-    const [signals, setSignals] = useState([])
     const [current, setCurrent] = useState('')
+    const [f, setF] = useState(1)
+    const [samples, setSamples] = useState(1)
+    const [ampl, setAmpl] = useState(0)
+    const [circle, setCircle] = useState(0)
+    const [startPhase, setStartPhase] = useState(0)
+    const [ogib, setOgib] = useState(0)
+    const [nesuch, setNesuch] = useState(0)
+    const [startNesuch, setStartNesuch] = useState(0)
+    const [glubina, setGlubina] = useState(0)
 
     const [anchorFile, setAnchorFile] = React.useState<null | HTMLElement>(null);
     const [anchorGrams, setAnchorGrams] = React.useState<null | HTMLElement>(null);
     const [anchorModels, setAnchorModels] = React.useState<null | HTMLElement>(null);
+    const [anchorNewParams, setAnchorNewParams] = React.useState<null | HTMLElement>(null);
 
     const handleClickFile = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorFile(event.currentTarget);
@@ -109,16 +122,22 @@ export default function Header(props: { title: any, file : any }) {
     };
 
     const handleClickModels = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setAnchorModels(event.currentTarget);
-        if (!window.location.href.includes("model")) {
-            history.push('/modeling/')
+        // if (!window.location.href.includes("model") && !window.location.href.includes("grams")) {
+        //     history.push('/modeling/')
+        // }
+        if (!window.location.href.includes("model") && !window.location.href.includes("grams")) {
+            setOpenNewModelParams(true)
+        } else {
+            setAnchorModels(event.currentTarget);
+
         }
     };
 
     const handleClose = () => {
-        setAnchorFile(null);
-        setAnchorGrams(null);
+        setAnchorFile(null)
+        setAnchorGrams(null)
         setAnchorModels(null)
+        setAnchorNewParams(null)
     };
 
     const [data, setData] = useState<Data>()
@@ -141,11 +160,17 @@ export default function Header(props: { title: any, file : any }) {
     const [openInfo, setOpenInfo] = React.useState(false);
     const [openModels, setOpenModels] = React.useState(false);
     const [openComplexModels, setOpenComplexModels] = React.useState(false);
+    const [openTonal, setOpenTonal] = React.useState(false);
+    const [openNewModelParams, setOpenNewModelParams] = React.useState(false);
+    const [openSinusoida, setOpenSinusoida] = React.useState(false);
+    const [hide, setHide] = useState(true)
 
     const handleCloseDialog = () => {
         setOpenInfo(false);
         setOpenModels(false);
         setOpenComplexModels(false);
+        setOpenNewModelParams(false);
+        setOpenSinusoida(false);
     };
 
     const newOscillogram = (event: React.MouseEvent<HTMLLIElement>) => {
@@ -179,39 +204,181 @@ export default function Header(props: { title: any, file : any }) {
         setOpenComplexModels(true)
     }
 
+    function newTonalOgib(event: React.MouseEvent<HTMLLIElement>) {
+        //@ts-ignore
+        setCurrent(event.target.id)
+        setAnchorModels(null)
+        setOpenTonal(true)
+    }
+
     function getNewSignal() {
         setOpenModels(false);
         //@ts-ignore
         const oldSignals = JSON.parse(localStorage.getItem('models'))
-        //@ts-ignore
-        setSignals([{name: current, args: argument}])
+        const signal = [{name: current, args: argument}]
         if (oldSignals !== null) {
             //@ts-ignore
-            localStorage.setItem('models', JSON.stringify(signals.concat(oldSignals)))
-        } else if (signals.length > 0) {
-            localStorage.setItem('models', JSON.stringify(signals))
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
         }
+        props.update()
     }
 
     function getNewComplexSignal() {
         setOpenComplexModels(false);
         //@ts-ignore
-        setSignals(signals.concat([{name: current, args: discrete + ':' + interval}]))
+        const oldSignals = JSON.parse(localStorage.getItem('models'))
+        const signal = [{name: current, args: `${ampl}:${ogib}:${nesuch}:${startNesuch}`}]
+        if (oldSignals !== null) {
+            //@ts-ignore
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
+        }
+        props.update()
+    }
+
+    function getNewTonalModel() {
+        setOpenTonal(false);
+        //@ts-ignore
+        const oldSignals = JSON.parse(localStorage.getItem('models'))
+        const signal = [{name: current, args: `${ampl}:${ogib}:${nesuch}:${startNesuch}:${glubina}`}]
+        if (oldSignals !== null) {
+            //@ts-ignore
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
+        }
+        props.update()
     }
 
     function deleteSignals() {
-        console.log("calls")
-        setSignals([])
+        localStorage.removeItem("models")
         setAnchorModels(null)
+        props.update()
+    }
+
+    function redirect() {
+        localStorage.setItem("fd", f.toString())
+        localStorage.setItem("samples", samples.toString())
+        history.push('/modeling/')
+    }
+
+    function getSinusoida(event: React.MouseEvent<HTMLLIElement>) {
+        //@ts-ignore
+        setCurrent(event.target.id)
+        setAnchorModels(null);
+        setOpenSinusoida(true);
+    }
+
+    function newSinusoida() {
+        setOpenSinusoida(false);
+        //@ts-ignore
+        const oldSignals = JSON.parse(localStorage.getItem('models'))
+        const signal = [{name: current, args: `${ampl}:${circle}:${startPhase}`}]
+        if (oldSignals !== null) {
+            //@ts-ignore
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
+        }
+        props.update()
+    }
+
+    function saveFile() {
+        if (JSON.parse(localStorage.getItem('models') as string) !== null) {
+            console.log(localStorage.getItem("fd"), localStorage.getItem('samples'))
+            const response = axios.post('http://localhost:3081/sendModels', {fd: 1})
+        } else {
+            setHide(false)
+        }
     }
 
     return (
         <React.Fragment>
-            <Dialog
-                open={openInfo}
-                onClose={handleClose}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description">
+            <Alert  className={clsx({[classes.hide]: hide})} onClose={() => {
+                setHide(!hide)
+            }} severity="error">
+                <AlertTitle>Ошибка</AlertTitle>Моделей нет</Alert>
+            <Dialog open={openNewModelParams} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Задание данных</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Частота дискретизации"
+                        type="number"
+                        defaultValue={f}
+                        onChange={num => setF(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Кол-во отсчетов"
+                        type="number"
+                        defaultValue={samples}
+                        onChange={num => setSamples(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={redirect} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openSinusoida} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Задание данных</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Амплитуда"
+                        type="number"
+                        defaultValue={ampl}
+                        onChange={num => setAmpl(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Круговая частота"
+                        type="number"
+                        defaultValue={circle}
+                        onChange={num => setCircle(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Начальная фаза"
+                        type="number"
+                        defaultValue={startPhase}
+                        onChange={num => setStartPhase(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={newSinusoida} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openInfo} onClose={handleClose} aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description">
                 <DialogTitle id="alert-dialog-title">{"Текущее состояние многоканального сигнала"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description" className={classes.dialog}>
@@ -221,7 +388,7 @@ export default function Header(props: { title: any, file : any }) {
                         <p>Дата и время начала записи - {data?.start.replace("T", " ")}</p>
                         <p>Дата и время окончания записи - {data?.end.replace("T", " ")}</p>
                         <p>Информация о каналах</p>
-                        <div>{data?.channelsName.map( (channel, number) => (
+                        <div>{data?.channelsName.map((channel, number) => (
                             <Typography component={"p"} key={number}>{channel}</Typography>
                         ))}</div>
                     </DialogContentText>
@@ -240,7 +407,7 @@ export default function Header(props: { title: any, file : any }) {
                         autoFocus
                         margin="dense"
                         id="from"
-                        label="Дискретный аргумент"
+                        label="Параметр n0"
                         type="number"
                         defaultValue={argument}
                         onChange={num => setArgument(+num.target.value)}
@@ -263,20 +430,40 @@ export default function Header(props: { title: any, file : any }) {
                         autoFocus
                         margin="dense"
                         id="from"
-                        label="Частота дискретизации"
+                        label="Амплитуда сигнала"
                         type="number"
-                        defaultValue={discrete}
-                        onChange={num => setDiscrete(+num.target.value)}
+                        defaultValue={ampl}
+                        onChange={num => setAmpl(+num.target.value)}
                     />
                     <TextField
                         style={{marginRight: '10px'}}
                         autoFocus
                         margin="dense"
                         id="from"
-                        label="Временный интервал"
+                        label="Частота огибающей"
                         type="number"
-                        defaultValue={interval}
-                        onChange={num => setInterval(+num.target.value)}
+                        defaultValue={ogib}
+                        onChange={num => setOgib(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Частота несущей"
+                        type="number"
+                        defaultValue={nesuch}
+                        onChange={num => setNesuch(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Начальная фаза несущей"
+                        type="number"
+                        defaultValue={startNesuch}
+                        onChange={num => setStartNesuch(+num.target.value)}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -284,6 +471,69 @@ export default function Header(props: { title: any, file : any }) {
                         Отмена
                     </Button>
                     <Button onClick={getNewComplexSignal} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={openTonal} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Индекс глубины модуляции"
+                        type="number"
+                        defaultValue={glubina}
+                        onChange={num => setGlubina(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Амплитуда сигнала"
+                        type="number"
+                        defaultValue={ampl}
+                        onChange={num => setAmpl(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Частота огибающей"
+                        type="number"
+                        defaultValue={ogib}
+                        onChange={num => setOgib(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Частота несущей"
+                        type="number"
+                        defaultValue={nesuch}
+                        onChange={num => setNesuch(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Начальная фаза несущей"
+                        type="number"
+                        defaultValue={startNesuch}
+                        onChange={num => setStartNesuch(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={getNewTonalModel} color="primary">
                         ОК
                     </Button>
                 </DialogActions>
@@ -325,7 +575,7 @@ export default function Header(props: { title: any, file : any }) {
                 keepMounted
                 open={Boolean(anchorGrams)}
                 onClose={handleClose}>
-                {(data?.channelsName && data?.channelsName.length > 0) ? (data?.channelsName.map( (channel, number) => (
+                {(data?.channelsName && data?.channelsName.length > 0) ? (data?.channelsName.map((channel, number) => (
                     <MenuItem onClick={newOscillogram} key={number} id={channel}>{channel}</MenuItem>
                 ))) : <MenuItem>Файл не загружен</MenuItem>}
             </Menu>
@@ -338,6 +588,8 @@ export default function Header(props: { title: any, file : any }) {
                 <Link color="inherit" to={"/file"}
                       className={classes.Link}><MenuItem onClick={handleClose}>Загрузить файл</MenuItem></Link>
                 <MenuItem onClick={getInfo}>Информация о файле</MenuItem>
+                <MenuItem onClick={saveFile}>Сохранить файл</MenuItem>
+                <MenuItem onClick={getInfo}>Сохранить как...</MenuItem>
             </Menu>
             <Menu
                 id="models"
@@ -349,13 +601,14 @@ export default function Header(props: { title: any, file : any }) {
                 <MenuItem onClick={newSignal} id={'impulse'}>Задержанный единичный имульс</MenuItem>
                 <MenuItem onClick={newSignal} id={'jump'}>Задержанный единичный скачок </MenuItem>
                 <MenuItem onClick={newSignal} id={'exponent'}>Дискретизированная убывающая экспонента</MenuItem>
-                <MenuItem onClick={newSignal} id={'sin'}>Дискретизированная синусоида</MenuItem>
+                <MenuItem onClick={getSinusoida} id={'sin'}>Дискретизированная синусоида</MenuItem>
                 <MenuItem onClick={newSignal} id={'meandr'}>«Меандр» с периодом L </MenuItem>
                 <MenuItem onClick={newSignal} id={'pila'}>“Пила” с периодом L</MenuItem>
                 <MenuItem onClick={newComplexSignal} id={'exp_ogub'}>Сигнал с экспоненциальной огибающей </MenuItem>
                 <MenuItem onClick={newComplexSignal} id={'balance_ogib'}>Сигнал с балансной огибающей </MenuItem>
-                <MenuItem onClick={newComplexSignal} id={'tonal_ogib'}>Сигнал с тональной огибающей</MenuItem>
-                <MenuItem onClick={newComplexSignal} id={'linear_modul'}>Сигнал с линейной частотной модуляцией</MenuItem>
+                <MenuItem onClick={newTonalOgib} id={'tonal_ogib'}>Сигнал с тональной огибающей</MenuItem>
+                <MenuItem onClick={newComplexSignal} id={'linear_module'}>Сигнал с линейной частотной
+                    модуляцией</MenuItem>
             </Menu>
         </React.Fragment>
     );
