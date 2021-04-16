@@ -32,7 +32,7 @@ const Graphic = React.memo((props: any) => {
     }
 
     function filter(data: any) {
-        const maxPoints = 1000
+        const maxPoints = 500
         const k = Math.ceil(data?.length / maxPoints)
         return data?.filter(
             (d: any, i: any) => ((i % k) === 0)
@@ -46,32 +46,40 @@ const Graphic = React.memo((props: any) => {
             </Menu>
             <div aria-controls="simple-menu" aria-haspopup="true"  onClick={handleClick}>
                 <Typography style={{textAlign: 'center'}}>{props.id}</Typography>
-                <VictoryChart>
+                <VictoryChart height={200}>
                     <VictoryLine data={filter(signal)} scale={{x: "time", y: "linear"}} style={{
                         data: { stroke: "black" },
-                        parent: { border: "1px solid #ccc"}
+                        parent: { border: "1px solid #ccc"},
                     }}
                     />
                     <VictoryAxis crossAxis
-                                 width={400}
-                                 height={400}
                                  theme={VictoryTheme.material}
                                  offsetY={50}
                                  standalone={false}
-                                 label="Time (ms)"
                                  orientation="bottom"
+
                     />
                     <VictoryAxis dependentAxis crossAxis
-                                 width={400}
-                                 height={400}
                                  theme={VictoryTheme.material}
                                  offsetX={50}
                                  standalone={false}
+                                 tickFormat={(t) => `${abbreviateNumber(t)}`}
                     />
                 </VictoryChart>
             </div>
         </div>
     );
 })
+
+const SI_SYMBOL = ["", "k", "M", "G", "T", "P", "E"];
+
+function abbreviateNumber(number: number){
+    const tier = Math.log10(Math.abs(number)) / 3 | 0;
+    if(tier === 0) return number;
+    const suffix = SI_SYMBOL[tier];
+    const scale = Math.pow(10, tier * 3);
+    const scaled = number / scale;
+    return scaled.toFixed(0) + suffix;
+}
 
 export default Graphic

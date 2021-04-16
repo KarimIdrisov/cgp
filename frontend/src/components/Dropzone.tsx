@@ -36,6 +36,7 @@ export default function MainContent(props: any) {
                 if(res.statusText === "OK") {
                     localStorage.setItem("file", file[0].name)
                     history.push("/modeling/" + file[0].name);
+                    localStorage.removeItem('models')
                 }
             })
     }

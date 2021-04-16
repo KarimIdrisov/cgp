@@ -215,11 +215,11 @@ app.get('/model-data', (req, res) => {
     })
 });
 
-app.post("/sendModels", function (request, response) {
-    console.log(request.data);
-});
+app.post("/sendModels", (req, res) => {
+    console.log(req.body.fd)
+})
 
-app.post('/send_data', function (req, res) {
+app.post('/upload', function (req, res) {
 
     upload(req, res, function (err) {
         if (err instanceof multer.MulterError) {

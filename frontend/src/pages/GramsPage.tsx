@@ -144,6 +144,8 @@ export default function GramsPage(props: any) {
         }
     }
 
+    console.log(reqChannels)
+
     return (
         <Layout file={file}>
             <Menu

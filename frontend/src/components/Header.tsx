@@ -142,7 +142,6 @@ export default function Header(props: { title: any, file: any, update: any }) {
 
     const [data, setData] = useState<Data>()
 
-
     useEffect(() => {
         async function getData() {
             const result = await axios.get('http://localhost:3081/model-data/?id=' + props.file);
@@ -215,7 +214,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
         setOpenModels(false);
         //@ts-ignore
         const oldSignals = JSON.parse(localStorage.getItem('models'))
-        const signal = [{name: current, args: argument}]
+        const signal = [{type: current, args: argument, name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`}]
         if (oldSignals !== null) {
             //@ts-ignore
             localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
@@ -229,7 +228,11 @@ export default function Header(props: { title: any, file: any, update: any }) {
         setOpenComplexModels(false);
         //@ts-ignore
         const oldSignals = JSON.parse(localStorage.getItem('models'))
-        const signal = [{name: current, args: `${ampl}:${ogib}:${nesuch}:${startNesuch}`}]
+        const signal = [{
+            type: current,
+            args: `${ampl}:${ogib}:${nesuch}:${startNesuch}`,
+            name: `Model_${oldSignals.length}_0`
+        }]
         if (oldSignals !== null) {
             //@ts-ignore
             localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
@@ -243,7 +246,11 @@ export default function Header(props: { title: any, file: any, update: any }) {
         setOpenTonal(false);
         //@ts-ignore
         const oldSignals = JSON.parse(localStorage.getItem('models'))
-        const signal = [{name: current, args: `${ampl}:${ogib}:${nesuch}:${startNesuch}:${glubina}`}]
+        const signal = [{
+            type: current,
+            args: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`,
+            name: `Model_${oldSignals.length}_0`
+        }]
         if (oldSignals !== null) {
             //@ts-ignore
             localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
@@ -263,6 +270,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
         localStorage.setItem("fd", f.toString())
         localStorage.setItem("samples", samples.toString())
         history.push('/modeling/')
+        setOpenNewModelParams(false)
     }
 
     function getSinusoida(event: React.MouseEvent<HTMLLIElement>) {
@@ -276,7 +284,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
         setOpenSinusoida(false);
         //@ts-ignore
         const oldSignals = JSON.parse(localStorage.getItem('models'))
-        const signal = [{name: current, args: `${ampl}:${circle}:${startPhase}`}]
+        const signal = [{type: current, args: `${ampl}:${circle}:${startPhase}`, name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`}]
         if (oldSignals !== null) {
             //@ts-ignore
             localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
@@ -295,9 +303,27 @@ export default function Header(props: { title: any, file: any, update: any }) {
         }
     }
 
+    const types = {
+        'impulse': 'Задержанный единичный импульс',
+        'jump': 'Задержанный единичный скачок',
+        'exponent': 'Дискретизированная убывающая экспонента',
+        'sin': 'Дискретизированная синусоида',
+        'meandr': "'Меандр'",
+        'pila': "'Пила'",
+        'exp_ogub': 'Сигнал с экспоненциальной огибающей',
+        'balance_ogib': 'Сигнал с балансной огибающей',
+        'tonal_ogib': 'Сигнал с тональной огибающей',
+        'linear_module': 'Сигнал с линейной частотной модуляцией'
+    }
+
+    function getType(name: string) {
+        // @ts-ignore
+        return types[name];
+    }
+
     return (
         <React.Fragment>
-            <Alert  className={clsx({[classes.hide]: hide})} onClose={() => {
+            <Alert className={clsx({[classes.hide]: hide})} onClose={() => {
                 setHide(!hide)
             }} severity="error">
                 <AlertTitle>Ошибка</AlertTitle>Моделей нет</Alert>
@@ -402,6 +428,9 @@ export default function Header(props: { title: any, file: any, update: any }) {
             <Dialog open={openModels} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
                 <DialogContent>
+                    <Typography>Тип: {getType(current)}</Typography>
+                    <Typography>Частота дискретизации: {data?.samplingRate !== undefined ? data?.samplingRate : localStorage.getItem('fd')}</Typography>
+                    <Typography>Кол-во отсчетов: {data?.samplesNumber !== undefined ? data?.samplesNumber : localStorage.getItem('samples')}</Typography>
                     <TextField
                         style={{marginRight: '10px'}}
                         autoFocus
@@ -425,6 +454,9 @@ export default function Header(props: { title: any, file: any, update: any }) {
             <Dialog open={openComplexModels} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
                 <DialogContent>
+                    <Typography>Тип: {getType(current)}</Typography>
+                    <Typography>Частота дискретизации: {data?.samplingRate !== null ? data?.samplingRate : f}</Typography>
+                    <Typography>Кол-во отсчетов: {data?.samplesNumber !== null ? data?.samplesNumber : samples}</Typography>
                     <TextField
                         style={{marginRight: '10px'}}
                         autoFocus
@@ -478,6 +510,9 @@ export default function Header(props: { title: any, file: any, update: any }) {
             <Dialog open={openTonal} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
                 <DialogContent>
+                    <Typography>Тип: {getType(current)}</Typography>
+                    <Typography>Частота дискретизации: {data?.samplingRate !== null ? data?.samplingRate : f}</Typography>
+                    <Typography>Кол-во отсчетов: {data?.samplesNumber !== null ? data?.samplesNumber : samples}</Typography>
                     <TextField
                         style={{marginRight: '10px'}}
                         autoFocus

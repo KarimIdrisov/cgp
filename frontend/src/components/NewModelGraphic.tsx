@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {VictoryAxis, VictoryBar, VictoryChart, VictoryLine, VictoryTheme} from "victory";
-import {Typography} from "@material-ui/core";
+import {Menu, MenuItem, Typography} from "@material-ui/core";
+import {useHistory} from "react-router-dom";
 
 export default function NewModelGraphic(props: any) {
 
@@ -12,6 +13,7 @@ export default function NewModelGraphic(props: any) {
     const [start, setStart] = useState()
     const [end, setEnd] = useState()
     const [arg, setArg] = useState()
+    const history = useHistory();
 
 
     if (props.fd !== 0 && fd === 0) {
@@ -148,11 +150,40 @@ export default function NewModelGraphic(props: any) {
         );
     }
 
+    const openMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+        // @ts-ignore
+        setAnchorEl(event.currentTarget);
+    };
+
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    function newOscillogram() {
+        setAnchorEl(null);
+        if (!window.location.href.includes("grams")) {
+            history.push("/grams/" + props.name);
+        } else {
+            const oldChannels = window.location.href.slice(28)
+            if (oldChannels.length === 0) {
+                history.push("/grams/" + props.name)
+            }
+            if (!oldChannels.includes(props.name)) {
+                history.push('/grams/' + oldChannels + ';' + props.name);
+            }
+        }
+    }
+
     return (
         <div>
-            <div>
-                <Typography style={{textAlign: 'center'}}>{`Model_${props.num}_1`}</Typography>
-                <VictoryChart>
+            <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+                <MenuItem onClick={newOscillogram}>Осцилограмма</MenuItem>
+            </Menu>
+            <div onClick={openMenu}>
+                <Typography style={{textAlign: 'center'}}>{props.name}</Typography>
+                <VictoryChart height={200}>
                     {props.id === 'jump' || props.id === 'impulse' ?
                         (<VictoryBar
                             style={{
@@ -169,16 +200,12 @@ export default function NewModelGraphic(props: any) {
                                 parent: {border: "1px solid #ccc"}
                             }}/>}
                     <VictoryAxis crossAxis
-                                 width={400}
-                                 height={400}
                                  theme={VictoryTheme.material}
                                  offsetY={50}
                                  standalone={false}
                                  orientation="bottom"
                     />
                     <VictoryAxis dependentAxis crossAxis
-                                 width={400}
-                                 height={400}
                                  theme={VictoryTheme.material}
                                  offsetX={50}
                                  standalone={false}

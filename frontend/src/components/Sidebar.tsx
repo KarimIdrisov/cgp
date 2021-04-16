@@ -16,7 +16,6 @@ const useStyles = makeStyles((theme: Theme) =>
         root: {
             display: 'flex',
             marginTop: "1px",
-            paddingRight: "50px"
         },
         appBar: {
             width: `calc(100% - ${drawerWidth}px)`,
@@ -32,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) =>
             display: "flex",
             paddingTop: "50px",
             paddingBottom: "50px",
-            paddingRight: "30px",
+            paddingLeft: "10px",
         },
         // necessary for content to be below app bar
         toolbar: theme.mixins.toolbar,
@@ -43,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         canvas: {
             maxWidth: "350px",
+            maxHeight: "300px"
         },
         Link: {
             textDecoration: 'none',
@@ -59,8 +59,9 @@ interface Data {
 }
 
 interface Model {
-    name: string,
-    args: string
+    type: string,
+    args: string,
+    name: string
 }
 
 export default function PermanentDrawerRight(props: any) {
@@ -107,7 +108,6 @@ export default function PermanentDrawerRight(props: any) {
     if (JSON.parse(localStorage.getItem('models') as string)?.length !== newModels?.length) {
         // @ts-ignore
         setNewModels(JSON.parse(localStorage.getItem('models')))
-        props.update()
     }
 
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -158,7 +158,7 @@ export default function PermanentDrawerRight(props: any) {
                     anchor="right">
                 {newModels?.map((model: Model, number) => (
                     <NewModelGraphic aria-controls="simple-menu" aria-haspopup="true" file={props.file} num={number}
-                                     id={model.name} args={model.args} key={model.args} fd={f} samples={samples}/>
+                                     id={model.type} name={model.name} args={model.args} key={model.name} fd={f} samples={samples}/>
                 ))}
                 {data?.channelsName.map((channel, number) => (
                     <Graphic aria-controls="simple-menu" aria-haspopup="true" func={newOscillogramByGraph}
