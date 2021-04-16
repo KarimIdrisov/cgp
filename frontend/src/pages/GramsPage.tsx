@@ -3,6 +3,7 @@ import {makeStyles} from '@material-ui/core/styles';
 import Layout from "../components/Layout";
 import axios from "axios";
 import Oscillogram from "../components/Oscillogram";
+import ModelOscillogram from "../components/ModelOscillogram";
 
 import Typography from "@material-ui/core/Typography";
 import {
@@ -80,6 +81,9 @@ export default function GramsPage(props: any) {
     const alert = useAlert()
     const [showMarkers, setShow] = useState(false)
 
+    const [f, setF] = useState(0)
+    const [samples, setSamples] = useState(0)
+
     const [anchorTools, setAnchorTools] = React.useState<null | HTMLElement>(null);
 
     useEffect(() => {
@@ -144,7 +148,25 @@ export default function GramsPage(props: any) {
         }
     }
 
-    console.log(reqChannels)
+    if (!window.location.href.includes("txt") && !window.location.href.includes("grams") && f === 0) {
+        // @ts-ignore
+        setF(+localStorage.getItem("fd"))
+    } else if ( (window.location.href.includes("txt") || window.location.href.includes("grams")) && f === 0) {
+        if (data?.samplingRate !== undefined) {
+            // @ts-ignore
+            setF(data?.samplingRate)
+        }
+    }
+
+    if (!window.location.href.includes("txt") && !window.location.href.includes("grams") && samples === 0) {
+        // @ts-ignore
+        setSamples(+localStorage.getItem("samples"))
+    } else if ( (window.location.href.includes("txt") || window.location.href.includes("grams")) && samples === 0) {
+        if (data?.samplesNumber !== undefined) {
+            // @ts-ignore
+            setSamples(data?.samplesNumber)
+        }
+    }
 
     return (
         <Layout file={file}>
@@ -170,10 +192,14 @@ export default function GramsPage(props: any) {
             <div className={classes.abs}>
                 <Minigram func={handleChange} file={file} id={reqChannels.split(";")[0]}/>
             </div>
-            {(reqChannels.split(";").map((channel: string, number: number) => (
-                <Oscillogram showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file} id={channel}
-                             key={number}/>
-            )))}
+            {(reqChannels.split(";").map((channel: string, number: number) => {
+                if (channel.includes('Model')) {
+                    return <ModelOscillogram start={data?.start} showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file} name={channel}
+                                             fd={f} samples={samples} key={number}/>
+                } else {
+                return <Oscillogram showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file} id={channel}
+                             key={number}/>}
+            }))}
             <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Отсчеты</DialogTitle>
                 <DialogContent className={classes.fragment}>

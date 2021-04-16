@@ -261,6 +261,15 @@ export default function Header(props: { title: any, file: any, update: any }) {
     }
 
     function deleteSignals() {
+        if (window.location.href.includes('grams')) {
+            let channels = (window.location.href.slice(28)).split(';')
+            channels = channels.filter( channel => !channel.includes("Model"))
+            if (channels.length === 0) {
+                history.push('/modeling/' + localStorage.getItem("file"))
+            } else {
+                history.push('/grams/' + channels.join(';'))
+            }
+        }
         localStorage.removeItem("models")
         setAnchorModels(null)
         props.update()
@@ -319,6 +328,10 @@ export default function Header(props: { title: any, file: any, update: any }) {
     function getType(name: string) {
         // @ts-ignore
         return types[name];
+    }
+
+    function dropData() {
+        localStorage.removeItem('models')
     }
 
     return (
@@ -574,7 +587,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 </DialogActions>
             </Dialog>
             <Toolbar className={classes.toolbar}>
-                <Link color="inherit" className={classes.toolbarLink} to="/">
+                <Link color="inherit" className={classes.toolbarLink} to="/" onClick={dropData}>
                     <Typography component="h2" variant="h5" color="inherit" align="center"
                                 className={classes.toolbarTitle}>
                         {title}
