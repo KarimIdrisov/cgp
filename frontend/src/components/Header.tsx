@@ -17,9 +17,10 @@ import {
 import axios from "axios";
 import clsx from "clsx";
 import {Alert, AlertTitle} from "@material-ui/lab";
-import RandomSignals from "./RandomSignals";
+import RandomSignals from "./Models/RandomSignals";
 import getType from "../utils/getType";
 import getParamsNames from "../utils/getParamsNames";
+import Superposition from "./Models/Superposition";
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -1039,6 +1040,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 <MenuItem onClick={newComplexSignal} id={'linear_module'}>Сигнал с линейной частотной
                     модуляцией</MenuItem>
                 <RandomSignals/>
+                <Superposition/>
             </Menu>
         </>
     );

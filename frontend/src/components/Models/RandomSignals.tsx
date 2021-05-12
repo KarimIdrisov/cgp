@@ -2,8 +2,8 @@ import React, {useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, TextField} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import getType from "../utils/getType";
-import getParamsNames from "../utils/getParamsNames";
+import getType from "../../utils/getType";
+import getParamsNames from "../../utils/getParamsNames";
 
 
 const useStyles = makeStyles((theme) => ({
