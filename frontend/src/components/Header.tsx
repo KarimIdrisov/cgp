@@ -225,7 +225,6 @@ export default function Header(props: { title: any, file: any, update: any }) {
 
             setLinearNesuch((f / 2) / (sampl / 100))
             setLinearOgib((f / 4) / (sampl / 10))
-
         }
     }, [setData]);
 
@@ -598,7 +597,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
     }
 
     return (
-        <React.Fragment>
+        <>
             <Alert className={clsx({[classes.hide]: hide})} onClose={() => {
                 setHide(!hide)
             }} severity="error">
@@ -747,12 +746,13 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         <p>Частота дискретизации – {data?.samplingRate} Гц(шаг между отсчетами {data?.time} сек.)</p>
                         <p>Дата и время начала записи - {data?.start.replace("T", " ")}</p>
                         <p>Дата и время окончания записи - {data?.end.replace("T", " ")}</p>
+                        <p>Продолжительность - </p>
                         <p>Информация о каналах</p>
                         <Table size="small" aria-label="a dense table">
                             <TableHead>
                                 <TableRow>
                                     <TableCell>Имя сигнала</TableCell>
-                                    <TableCell>Источник</TableCell>
+                                    <TableCell align="center">Источник</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -761,7 +761,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                                         <TableCell component="th" scope="row">
                                             {channel}
                                         </TableCell>
-                                        <TableCell align="right">1</TableCell>
+                                        <TableCell align="center">Файл: {localStorage.getItem('file')}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -1040,7 +1040,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 <MenuItem onClick={newComplexSignal} id={'linear_module'}>Сигнал с линейной частотной
                     модуляцией</MenuItem>
             </Menu>
-        </React.Fragment>
+        </>
     );
 }
 

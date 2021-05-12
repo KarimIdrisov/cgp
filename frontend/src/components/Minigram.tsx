@@ -124,7 +124,6 @@ export default function Minigram(this: any, props: any) {
             },
             navigator: {
                 adaptToUpdatedData: false,
-                //maskInside: false,
                 series: {
                     type: 'spline',
                     color: 'black',
@@ -171,7 +170,6 @@ export default function Minigram(this: any, props: any) {
 
     function handleChange(e: any) {
         if (send) {
-            console.log(1)
             // eslint-disable-next-line no-restricted-globals
             props.func(e)
         }

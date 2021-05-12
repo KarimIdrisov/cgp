@@ -1,24 +1,10 @@
-import {makeStyles} from '@material-ui/core/styles';
 import React, {useEffect, useState} from 'react';
 
 import Highcharts from 'highcharts/highstock'
 import HighchartsReact from 'highcharts-react-official';
 
-import {Button, Menu, MenuItem} from "@material-ui/core";
+import {Menu, MenuItem} from "@material-ui/core";
 import {useHistory} from "react-router-dom";
-import Typography from "@material-ui/core/Typography";
-
-const useStyles = makeStyles((theme) => ({
-    border: {
-        border: "1px solid black",
-    },
-    toolbar: {
-        margin: "20px",
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'flex-end'
-    },
-}));
 
 export default function Oscillogram(props: any) {
     const [name, setName] = useState()
@@ -81,7 +67,7 @@ export default function Oscillogram(props: any) {
             gridLineWidth: 1
         },
         series: [{
-            type: (model.type === 'impulse' || model.type === 'jump') ? 'column' : 'spline',
+            type: (model.type === 'impulse' || model.type === 'jump') ? 'column' : (props.spline ? 'spline' : 'line'),
             name: props.name,
             data: data?.slice(props.min, props.max),
             dataGrouping: {
@@ -111,6 +97,7 @@ export default function Oscillogram(props: any) {
         if (props.start === undefined) {
             start = new Date('01-01-2000')
         }
+       console.log(props.samples)
         // @ts-ignore
         const samples = +localStorage.getItem("samples")
         // @ts-ignore
@@ -186,7 +173,6 @@ export default function Oscillogram(props: any) {
                 dataTmp.push(args[0] * Math.cos(2 * Math.PI * args[1] * i) * Math.cos(2 * Math.PI * args[2] * i + +args[3]))
                 times.push((new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime())
             }
-            console.log(dataTmp)
             setData(dataTmp)
             setTimes(times)
             setName(model.name)

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
@@ -36,8 +35,3 @@ export default function Footer(props: any) {
     </footer>
   );
 }
-
-Footer.propTypes = {
-  description: PropTypes.string,
-  title: PropTypes.string,
-};

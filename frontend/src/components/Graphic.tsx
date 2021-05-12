@@ -1,33 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import axios from "axios";
 import {VictoryAxis, VictoryChart, VictoryLine, VictoryTheme} from "victory";
-import {CircularProgress, Menu, MenuItem, Typography} from "@material-ui/core";
-import clsx from "clsx";
-import {makeStyles} from "@material-ui/core/styles";
-
-const useStyles = makeStyles((theme) => ({
-    hide: {
-        display: 'none'
-    },
-    progress: {
-        marginLeft: '100px',
-        marginBottom: '50px'
-    }
-}));
+import {Menu, MenuItem, Typography} from "@material-ui/core";
 
 const Graphic = React.memo((props: any) => {
     const [signal, setSignal] = useState();
-    // const [loading, setLoading] = useState(false)
-    const classes = useStyles();
 
     useEffect(() => {
         async function getData() {
             const result = await axios.get('http://localhost:3081/get-osciologram/?file=' + props.file + "&signal=" + props.id);
             setSignal(result.data);
         }
-
         getData();
-        // setLoading(true)
     }, [])
 
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -47,19 +31,15 @@ const Graphic = React.memo((props: any) => {
     }
 
     function filter(data: any) {
-        // setLoading(false)
         const maxPoints = 300
         const k = Math.ceil(data?.length / maxPoints)
-        let tmpData =  data?.filter(
+        return data?.filter(
             (d: any, i: any) => ((i % k) === 0)
-        );
-        // setLoading(true)
-        return tmpData
+        )
     }
 
     return (
         <div>
-            {/*<CircularProgress className={clsx(classes.progress,{[classes.hide]: loading})}/>*/}
             <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                 <MenuItem onClick={addGraphic}>Осцилограмма</MenuItem>
             </Menu>

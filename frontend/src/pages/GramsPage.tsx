@@ -17,9 +17,11 @@ import {
 } from "@material-ui/core";
 import {useAlert} from "react-alert";
 import Minigram from "../components/Minigram";
-import clsx from "clsx";
 import TimelineIcon from "@material-ui/icons/Timeline";
+import ShowChartIcon from '@material-ui/icons/ShowChart';
 import ModelMinigram from "../components/ModelMinigram";
+import {ToggleButton, ToggleButtonGroup} from "@material-ui/lab";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
     markdown: {
@@ -85,6 +87,7 @@ export default function GramsPage(props: any) {
     const [valueMax, setMaxValue] = useState(0)
     const alert = useAlert()
     const [showMarkers, setShow] = useState(false)
+    const [showSpline, setShowSpline] = useState(false)
 
     const [f, setF] = useState(0)
     const [samples, setSamples] = useState(0)
@@ -157,6 +160,14 @@ export default function GramsPage(props: any) {
         }
     }
 
+    function turnSpline() {
+        if (!showSpline) {
+            setShowSpline(true)
+        } else {
+            setShowSpline(false)
+        }
+    }
+
     if (!window.location.href.includes("txt") && !window.location.href.includes("grams") && f === 0) {
         // @ts-ignore
         setF(+localStorage.getItem("fd"))
@@ -205,24 +216,32 @@ export default function GramsPage(props: any) {
                         className={classes.btn}>
                     <Typography variant="h6">Инструменты</Typography>
                 </Button>
-                <Button className={clsx({[classes.active]: showMarkers})} onClick={turnInterpolation}>
-                    <TimelineIcon/>
-                </Button>
+                <ToggleButtonGroup>
+                    <ToggleButton className={clsx({[classes.active]: showMarkers})} onClick={turnInterpolation}>
+                        <TimelineIcon/>
+                    </ToggleButton>
+                    <ToggleButton className={clsx({[classes.active]: showSpline})} onClick={turnSpline}>
+                        <ShowChartIcon/>
+                    </ToggleButton>
+                </ToggleButtonGroup>
             </div>
+            <Typography>Начало - {min?.toFixed()}, Конец - {max?.toFixed()}</Typography>
             <div className={classes.abs}>
-                {(localStorage.getItem('models') !== null && reqChannels.split(";")[0].includes('Model')) ?
-                    (<ModelMinigram func={handleChange} start={data?.start} id={reqChannels.split(";")[0]} fd={f}
-                                    samples={samples}/>)
+                {(reqChannels.split(";")[0].includes('Model') && localStorage.getItem('models') !== null) ?
+                    (<ModelMinigram func={handleChange} start={data?.start} id={reqChannels.split(";")[0]}
+                                    fd={file !== null ? data?.samplingRate : samples}
+                                    samples={file !== null ? data?.samplesNumber : samples}/>)
                     : (<Minigram func={handleChange} file={file} id={reqChannels.split(";")[0]}/>)}
             </div>
             {(reqChannels.split(";").map((channel: string, number: number) => {
                 if (localStorage.getItem('models') !== null && channel.includes('Model')) {
                     return <ModelOscillogram start={data?.start} showMarkers={showMarkers} func={handleChange} min={min}
-                                             max={max} file={file} name={channel} height={height}
-                                             fd={f} samples={samples} key={number}/>
+                                             max={max} file={file} name={channel} height={height} spline={showSpline}
+                                             fd={file !== null ? data?.samplingRate : samples}
+                                             samples={file !== null ? data?.samplesNumber : samples} key={number}/>
                 } else {
                     return <Oscillogram showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file}
-                                        id={channel} height={height}
+                                        id={channel} height={height} spline={showSpline}
                                         key={number}/>
                 }
             }))}

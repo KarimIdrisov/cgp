@@ -30,7 +30,7 @@ interface Data {
     time: number,
 }
 
-export default function ModelingPage(props: any) {
+export default function ModelingPage() {
     const classes = useStyles();
     const [data, setData] = useState<Data>()
     const file = localStorage.getItem("file")

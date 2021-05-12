@@ -88,7 +88,7 @@ export default function Oscillogram(props: any) {
                 dataGrouping: {
                     enabled: true
                 },
-                type: 'spline',
+                type: props.spline ? 'spline' : 'line',
             }],
         };
     }

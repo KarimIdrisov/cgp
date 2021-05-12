@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 import {useHistory} from "react-router-dom";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
     dropzone: {
         padding: 32,
     },
@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-export default function MainContent(props: any) {
+export default function MainContent() {
     const classes = useStyles();
     const history = useHistory();
 

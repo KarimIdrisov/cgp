@@ -33,8 +33,7 @@ export default function ModelMinigram(this: any, props: any) {
         setId(props.id)
     }
     let model: any
-    // @ts-ignore
-    const models = JSON.parse(localStorage.getItem("models"))
+    const models = JSON.parse(localStorage.getItem("models") as string)
     for (let i = 0; i < models.length; i++) {
         if (models[i].name === id) {
             model = models[i]
@@ -281,8 +280,6 @@ export default function ModelMinigram(this: any, props: any) {
             setState(true)
         }
     }
-    console.log(data)
-
     return (
         <div className={classes.gram} onMouseDown={handleRange} onMouseUp={sendExtremas}>
             {(data && data.length > 1) ? (
