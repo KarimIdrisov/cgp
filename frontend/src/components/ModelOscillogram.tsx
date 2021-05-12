@@ -32,7 +32,9 @@ export default function Oscillogram(props: any) {
         },
         chart: {
             zoomType: "xy",
-            height: props.height
+            height: props.height,
+            marginLeft: 80,
+            spacingLeft: 30
         },
         title: {
             text: ''
@@ -93,15 +95,16 @@ export default function Oscillogram(props: any) {
     useEffect(() => {
         const dataTmp = []
         const times = []
-        let start = new Date(props.start)
-        if (props.start === undefined) {
-            start = new Date('01-01-2000')
+        let start = new Date('01-01-2002')
+        if (localStorage.getItem('start') !== null) {
+            // @ts-ignore
+            start = new Date(localStorage.getItem('start'))
         }
-       console.log(props.samples)
         // @ts-ignore
-        const samples = +localStorage.getItem("samples")
+        const samples = +localStorage.getItem('samples')
         // @ts-ignore
         const fd = +localStorage.getItem('fd')
+
         if (model.type === 'impulse') {
             for (let i = 0; i < samples; i++) {
                 dataTmp.push(i === model.args ? 1 : 0)

@@ -104,6 +104,11 @@ export default function GramsPage(props: any) {
         }
 
         getData();
+        if (data?.samplesNumber !== undefined) {
+            localStorage.setItem('samples', data?.samplesNumber.toString())
+            localStorage.setItem('fd', data?.samplingRate.toString())
+            localStorage.setItem('start', data?.start)
+        }
     }, [setData]);
 
     const handleClickTools = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -229,16 +234,17 @@ export default function GramsPage(props: any) {
             <div className={classes.abs}>
                 {(reqChannels.split(";")[0].includes('Model') && localStorage.getItem('models') !== null) ?
                     (<ModelMinigram func={handleChange} start={data?.start} id={reqChannels.split(";")[0]}
-                                    fd={file !== null ? data?.samplingRate : samples}
-                                    samples={file !== null ? data?.samplesNumber : samples}/>)
+                                    fd={f}
+                                    samples={samples}/>)
                     : (<Minigram func={handleChange} file={file} id={reqChannels.split(";")[0]}/>)}
             </div>
             {(reqChannels.split(";").map((channel: string, number: number) => {
                 if (localStorage.getItem('models') !== null && channel.includes('Model')) {
                     return <ModelOscillogram start={data?.start} showMarkers={showMarkers} func={handleChange} min={min}
                                              max={max} file={file} name={channel} height={height} spline={showSpline}
-                                             fd={file !== null ? data?.samplingRate : samples}
-                                             samples={file !== null ? data?.samplesNumber : samples} key={number}/>
+                                             fd={f}
+                                             samples={samples}
+                                             key={number}/>
                 } else {
                     return <Oscillogram showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file}
                                         id={channel} height={height} spline={showSpline}

@@ -147,7 +147,7 @@ export default function PermanentDrawerRight(props: any) {
             }
         }
     }
-
+    
     return (
         <div className={classes.root}>
             <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>

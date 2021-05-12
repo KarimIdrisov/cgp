@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import axios from "axios";
-import {VictoryAxis, VictoryChart, VictoryLine, VictoryTheme} from "victory";
+import {VictoryAxis, VictoryChart, VictoryLine} from "victory";
 import {Menu, MenuItem, Typography} from "@material-ui/core";
 
 const Graphic = React.memo((props: any) => {
@@ -45,7 +45,7 @@ const Graphic = React.memo((props: any) => {
             </Menu>
             <div
                 aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
-                <Typography style={{textAlign: 'center'}}>{props.id}</Typography>
+                <Typography style={{textAlign: 'center'}}></Typography>
                 <VictoryChart height={200}>
                     <VictoryLine data={filter(signal)} scale={{x: "time", y: "linear"}} style={{
                         data: {stroke: "black"},
@@ -53,17 +53,38 @@ const Graphic = React.memo((props: any) => {
                     }}
                     />
                     <VictoryAxis crossAxis
-                                 theme={VictoryTheme.material}
+                                 standalone={true}
+                                 orientation="top"
                                  offsetY={50}
-                                 standalone={false}
+                                 style={{
+                                     tickLabels: {opacity: 0}
+                                 }}
+                                 label={props.id}
+                    />
+                    <VictoryAxis crossAxis
+                                 standalone={true}
+                                 orientation="top"
+                                 style={{
+                                     axis: {opacity: 0.5},
+                                     tickLabels: {opacity: 0}
+                                 }}
+                    />
+                    <VictoryAxis crossAxis
+                                 standalone={true}
+                                 offsetY={50}
                                  orientation="bottom"
-
                     />
                     <VictoryAxis dependentAxis crossAxis
-                                 theme={VictoryTheme.material}
                                  offsetX={50}
                                  standalone={false}
                                  tickFormat={(t) => `${abbreviateNumber(t)}`}
+                    />
+                    <VictoryAxis crossAxis
+                                 orientation="right"
+                                 standalone={false}
+                                 style={{
+                                     tickLabels: {opacity: 0}
+                                 }}
                     />
                 </VictoryChart>
             </div>

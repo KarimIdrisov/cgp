@@ -17,6 +17,9 @@ import {
 import axios from "axios";
 import clsx from "clsx";
 import {Alert, AlertTitle} from "@material-ui/lab";
+import RandomSignals from "./RandomSignals";
+import getType from "../utils/getType";
+import getParamsNames from "../utils/getParamsNames";
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -152,81 +155,96 @@ export default function Header(props: { title: any, file: any, update: any }) {
 
     useEffect(() => {
         async function getData() {
+            console.log('work')
             const result = await axios.get('http://localhost:3081/model-data/?id=' + props.file);
-            setData(result.data);
+            if (result.data !== undefined) {
+                setData(result.data);
+            }
+            console.log(data)
+            if (result.data.samplesNumber !== undefined) {
+                console.log('file')
+                localStorage.setItem('samples', result.data.samplesNumber.toString())
+                localStorage.setItem('fd', result.data.samplingRate.toString())
+                localStorage.setItem('start', result.data.start)
+                // @ts-ignore
+                setSamples(+localStorage.getItem('samples'))
+                // @ts-ignore
+                setF(+localStorage.getItem('fd'))
+                // @ts-ignore
+                const sampl = +localStorage.getItem('samples');
+                // @ts-ignore
+                const f = +localStorage.getItem('fd');
+                console.log(sampl)
+                setArgument(+(result.data.samplesNumber / 8).toFixed())
+                setArgument(+(sampl / 8).toFixed())
+                setAmpl(1)
+                setExponent(0.99)
+                setStartPhase(3.14)
+                if (sampl < 100000) {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+                } else {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 2))))
+                }
+                setOgib(sampl / 5)
+                setNesuch(25 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+
+                setBalanceNesuch(f / 20 / (sampl / 1000))
+                setBalanceOgib(f / 400 / (sampl / 1000))
+
+                if (sampl < 100000) {
+                    setTonalNesuch(f / 20 / (sampl / 1000))
+                    setTonalOgib(f / 400 / (sampl / 1000))
+                    setGlubina(0.5)
+                } else {
+                    setGlubina(0.5)
+                    setTonalOgib((f / 2) / (sampl / 10))
+                    setTonalNesuch((f / 2) / 1000 / (sampl / 100000))
+                }
+
+                setLinearNesuch((f / 2) / (sampl / 100))
+                setLinearOgib((f / 4) / (sampl / 10))
+            } else {
+                console.log('not file')
+                // @ts-ignore
+                setSamples(+localStorage.getItem('samples'))
+                // @ts-ignore
+                setF(+localStorage.getItem('fd'))
+                // @ts-ignore
+                const sampl = +localStorage.getItem('samples');
+                // @ts-ignore
+                const f = +localStorage.getItem('fd');
+                setArgument(+(sampl / 8).toFixed())
+                setAmpl(1)
+                setExponent(0.99)
+                setStartPhase(3.14)
+                if (sampl < 100000) {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+                } else {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 2))))
+                }
+                setOgib(sampl / 5)
+                setNesuch(25 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+
+                setBalanceNesuch(f / 20 / (sampl / 1000))
+                setBalanceOgib(f / 400 / (sampl / 1000))
+
+                if (sampl < 100000) {
+                    setTonalNesuch(f / 20 / (sampl / 1000))
+                    setTonalOgib(f / 400 / (sampl / 1000))
+                    setGlubina(0.5)
+                } else {
+                    setGlubina(0.5)
+                    setTonalOgib((f / 2) / (sampl / 10))
+                    setTonalNesuch((f / 2) / 1000 / (sampl / 100000))
+                }
+
+                setLinearNesuch((f / 2) / (sampl / 100))
+                setLinearOgib((f / 4) / (sampl / 10))
+            }
         }
 
         getData();
-
-        if (data?.samplesNumber !== undefined) {
-            setArgument(+(data?.samplesNumber / 8).toFixed())
-            setAmpl(1)
-            setExponent(0.99)
-            setStartPhase(3.14)
-            if (data?.samplesNumber < 100000) {
-                setCircle(35 / (Math.pow(10, (data?.samplesNumber.toString().split('').length - 1))))
-            } else {
-                setCircle(35 / (Math.pow(10, (data?.samplesNumber.toString().split('').length - 1))))
-            }
-            setOgib(data?.samplesNumber / 5)
-            setNesuch(25 / (Math.pow(10, (data?.samplesNumber.toString().split('').length - 1))))
-
-            setBalanceNesuch(data?.samplingRate / 20 / (data?.samplesNumber / 1000))
-            setBalanceOgib(data?.samplingRate / 400 / (data?.samplesNumber / 1000))
-
-            if (data?.samplesNumber < 100000) {
-                setTonalNesuch(data?.samplingRate / 20 / (data?.samplesNumber / 1000))
-                setTonalOgib(data?.samplingRate / 400 / (data?.samplesNumber / 1000))
-                setGlubina(0.5)
-            } else {
-                setGlubina(0.5)
-                setTonalOgib((data?.samplingRate / 2) / (data?.samplesNumber / 10))
-                setTonalNesuch((data?.samplingRate / 2) / 1000 / (data?.samplesNumber / 100000))
-            }
-
-            setLinearNesuch((data?.samplingRate / 2) / (data?.samplesNumber / 100))
-            setLinearOgib((data?.samplingRate / 4) / (data?.samplesNumber / 10))
-        } else {
-            // @ts-ignore
-            setSamples(+localStorage.getItem('samples'))
-            // @ts-ignore
-            setF(+localStorage.getItem('fd'))
-            let sampl: number;
-            let f: number;
-
-            // @ts-ignore
-            sampl = +localStorage.getItem('samples');
-            // @ts-ignore
-            f = +localStorage.getItem('fd');
-            setArgument(+(sampl / 8).toFixed())
-            setAmpl(1)
-            setExponent(0.99)
-            setStartPhase(3.14)
-            if (sampl < 100000) {
-                setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 1))))
-            } else {
-                setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 2))))
-            }
-            setOgib(sampl / 5)
-            setNesuch(25 / (Math.pow(10, (sampl.toString().split('').length - 1))))
-
-            setBalanceNesuch(f / 20 / (sampl / 1000))
-            setBalanceOgib(f / 400 / (sampl / 1000))
-
-            if (sampl < 100000) {
-                setTonalNesuch(f / 20 / (sampl / 1000))
-                setTonalOgib(f / 400 / (sampl / 1000))
-                setGlubina(0.5)
-            } else {
-                setGlubina(0.5)
-                setTonalOgib((f / 2) / (sampl / 10))
-                setTonalNesuch((f / 2) / 1000 / (sampl / 100000))
-            }
-
-            setLinearNesuch((f / 2) / (sampl / 100))
-            setLinearOgib((f / 4) / (sampl / 10))
-        }
-    }, [setData]);
+    }, [setData, setSamples, setF]);
 
     function getInfo() {
         setOpenInfo(true);
@@ -461,18 +479,6 @@ export default function Header(props: { title: any, file: any, update: any }) {
         console.log('File saved')
     }
 
-    const types = {
-        'impulse': 'Задержанный единичный импульс',
-        'jump': 'Задержанный единичный скачок',
-        'exponent': 'Дискретизированная убывающая экспонента',
-        'sin': 'Дискретизированная синусоида',
-        'meandr': "'Меандр'",
-        'pila': "'Пила'",
-        'exp_ogub': 'Сигнал с экспоненциальной огибающей',
-        'balance_ogib': 'Сигнал с балансной огибающей',
-        'tonal_ogib': 'Сигнал с тональной огибающей',
-        'linear_module': 'Сигнал с линейной частотной модуляцией'
-    }
     const args = {
         'impulse': 'Задержка импульса',
         'jump': 'Задержка скачка',
@@ -486,19 +492,12 @@ export default function Header(props: { title: any, file: any, update: any }) {
         'linear_module': ['Амплитуда', 'Частота в начальный момент времени', 'Частота в конечный момент времени', 'Начальная фаза']
     }
 
-    function getType(name: string) {
-        // @ts-ignore
-        return types[name];
-    }
-
-    function getParams(name: string) {
-        // @ts-ignore
-        return args[name];
-    }
-
     function dropData() {
         localStorage.removeItem('file')
         localStorage.removeItem('models')
+        localStorage.removeItem('start')
+        localStorage.removeItem('samples')
+        localStorage.removeItem('fd')
     }
 
     function getOgibNesuch(name: string) {
@@ -699,7 +698,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[0] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[0] : ''}
                         type="number"
                         defaultValue={ampl}
                         onChange={num => setAmpl(+num.target.value)}
@@ -710,7 +709,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[1] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
                         type="number"
                         defaultValue={circle}
                         onChange={num => setCircle(+num.target.value)}
@@ -721,7 +720,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[2] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[2] : ''}
                         type="number"
                         defaultValue={startPhase}
                         onChange={num => setStartPhase(+num.target.value)}
@@ -744,8 +743,8 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         <p>Общее число каналов - {data?.channelsNumber}</p>
                         <p>Общее количество отсчетов – {data?.samplesNumber}</p>
                         <p>Частота дискретизации – {data?.samplingRate} Гц(шаг между отсчетами {data?.time} сек.)</p>
-                        <p>Дата и время начала записи - {data?.start.replace("T", " ")}</p>
-                        <p>Дата и время окончания записи - {data?.end.replace("T", " ")}</p>
+                        <p>Дата и время начала записи - {data?.start}</p>
+                        <p>Дата и время окончания записи - {data?.end}</p>
                         <p>Продолжительность - </p>
                         <p>Информация о каналах</p>
                         <Table size="small" aria-label="a dense table">
@@ -756,14 +755,14 @@ export default function Header(props: { title: any, file: any, update: any }) {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {data?.channelsName.map((channel) => (
+                                {data ? (data?.channelsName.map((channel) => (
                                     <TableRow key={channel}>
                                         <TableCell component="th" scope="row">
                                             {channel}
                                         </TableCell>
                                         <TableCell align="center">Файл: {localStorage.getItem('file')}</TableCell>
                                     </TableRow>
-                                ))}
+                                ))) : (<></>)}
                             </TableBody>
                         </Table>
                     </DialogContentText>
@@ -788,7 +787,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current)}
+                        label={getParamsNames(current)}
                         type="number"
                         defaultValue={argument}
                         onChange={num => setArgument(+num.target.value)}
@@ -817,7 +816,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current)}
+                        label={getParamsNames(current)}
                         type="number"
                         defaultValue={exponent}
                         onChange={num => setExponent(+num.target.value)}
@@ -846,7 +845,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[0] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[0] : ''}
                         type="number"
                         defaultValue={ampl}
                         onChange={num => setAmpl(+num.target.value)}
@@ -857,7 +856,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[1] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
                         type="number"
                         defaultValue={getDefaultOgib(current)}
                         onChange={num => setDefaultOgib(current, +num.target.value)}
@@ -868,7 +867,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[2] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[2] : ''}
                         type="number"
                         defaultValue={getDefaultNesuch(current)}
                         onChange={num => setDefaultNesuch(current, +num.target.value)}
@@ -879,7 +878,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[3] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[3] : ''}
                         type="number"
                         defaultValue={startNesuch}
                         onChange={num => setStartNesuch(+num.target.value)}
@@ -908,7 +907,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[4] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[4] : ''}
                         type="number"
                         defaultValue={glubina}
                         onChange={num => setGlubina(+num.target.value)}
@@ -919,7 +918,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[0] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[0] : ''}
                         type="number"
                         defaultValue={ampl}
                         onChange={num => setAmpl(+num.target.value)}
@@ -930,7 +929,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[1] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
                         type="number"
                         defaultValue={tonalOgib}
                         onChange={num => setTonalOgib(+num.target.value)}
@@ -941,7 +940,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         margin="dense"
                         id="from"
                         variant='outlined'
-                        label={getParams(current) !== undefined ? getParams(current)[2] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[2] : ''}
                         type="number"
                         defaultValue={tonalNesuch}
                         onChange={num => setTonalNesuch(+num.target.value)}
@@ -953,7 +952,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         fullWidth
                         variant='outlined'
                         id="from"
-                        label={getParams(current) !== undefined ? getParams(current)[3] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[3] : ''}
                         type="number"
                         defaultValue={startNesuch}
                         onChange={num => setStartNesuch(+num.target.value)}
@@ -1039,6 +1038,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 <MenuItem onClick={newTonalOgib} id={'tonal_ogib'}>Сигнал с тональной огибающей</MenuItem>
                 <MenuItem onClick={newComplexSignal} id={'linear_module'}>Сигнал с линейной частотной
                     модуляцией</MenuItem>
+                <RandomSignals/>
             </Menu>
         </>
     );

@@ -41,6 +41,12 @@ export default function ModelingPage() {
         async function getData() {
             const result = await axios.get('http://localhost:3081/model-data/?id=' + file);
             setData(result.data);
+
+            if (data?.samplesNumber !== undefined) {
+                localStorage.setItem('samples', data?.samplesNumber.toString())
+                localStorage.setItem('fd', data?.samplingRate.toString())
+                localStorage.setItem('start', data?.start)
+            }
         }
 
         getData();

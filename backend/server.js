@@ -31,7 +31,6 @@ app.get('/channels', (req, res) => {
         const channelsNumber = lines[1];
         const samplesNumber = lines[3];
         const samplingRate = lines[5];
-        console.log(+samplesNumber)
         let channelsName = lines[11].split(';');
         channelsName = channelsName.slice(0, +channelsNumber);
         res.json({
@@ -168,6 +167,10 @@ app.get('/get-signal-sidebar', (req, res) => {
 app.get('/model-data', (req, res) => {
     const file = "file-" + req.query.id;
 
+    if (req.query.id === 'undefined') {
+        res.json()
+    }
+
     fs.readFile(`@/../uploads/${file}`, 'utf8', (err, data) => {
         if (err) {
             console.error(err)
@@ -214,10 +217,6 @@ app.get('/model-data', (req, res) => {
         });
     })
 });
-
-app.post("/sendModels", (req, res) => {
-    // console.log(req.body.fd)
-})
 
 app.post('/saveNewFile', (req, res) => {
 

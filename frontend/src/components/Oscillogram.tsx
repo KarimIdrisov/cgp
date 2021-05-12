@@ -48,7 +48,9 @@ export default function Oscillogram(props: any) {
             },
             chart: {
                 zoomType: "xy",
-                height: props.height
+                height: props.height,
+                marginLeft: 80,
+                spacingLeft: 30
             },
             title: {
                 text: ''

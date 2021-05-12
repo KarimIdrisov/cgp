@@ -23,8 +23,11 @@ export default function NewModelGraphic(props: any) {
         const dataTmp = []
         // @ts-ignore
         const samples = +localStorage.getItem("samples")
+        console.log(localStorage.getItem("samples"))
         // @ts-ignore
         const fd = +localStorage.getItem('fd')
+
+        console.log(samples, fd)
         const k = Math.ceil(samples / 1000)
 
         if (props.id === 'impulse') {
@@ -198,7 +201,6 @@ export default function NewModelGraphic(props: any) {
                 <MenuItem onClick={deleteSignal}>Удалить сигнал</MenuItem>
             </Menu>
             <div onClick={openMenu}>
-                <Typography style={{textAlign: 'center'}}>{props.name}</Typography>
                 <VictoryChart height={200}>
                     {props.id === 'jump' || props.id === 'impulse' ?
                         (<VictoryBar
@@ -216,15 +218,37 @@ export default function NewModelGraphic(props: any) {
                                 parent: {border: "1px solid #ccc"}
                             }}/>}
                     <VictoryAxis crossAxis
-                                 theme={VictoryTheme.material}
+                                 standalone={true}
+                                 orientation="top"
                                  offsetY={50}
-                                 standalone={false}
+                                 style={{
+                                     tickLabels: {opacity: 0}
+                                 }}
+                                 label={props.name}
+                    />
+                    <VictoryAxis crossAxis
+                                 standalone={true}
+                                 orientation="top"
+                                 style={{
+                                     axis: {opacity: 0.5},
+                                     tickLabels: {opacity: 0}
+                                 }}
+                    />
+                    <VictoryAxis crossAxis
+                                 standalone={true}
+                                 offsetY={50}
                                  orientation="bottom"
                     />
                     <VictoryAxis dependentAxis crossAxis
-                                 theme={VictoryTheme.material}
                                  offsetX={50}
                                  standalone={false}
+                    />
+                    <VictoryAxis crossAxis
+                                 orientation="right"
+                                 standalone={false}
+                                 style={{
+                                     tickLabels: {opacity: 0}
+                                 }}
                     />
                 </VictoryChart>
             </div>
