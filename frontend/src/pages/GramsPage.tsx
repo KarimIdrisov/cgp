@@ -19,6 +19,7 @@ import {useAlert} from "react-alert";
 import Minigram from "../components/Minigram";
 import clsx from "clsx";
 import TimelineIcon from "@material-ui/icons/Timeline";
+import ModelMinigram from "../components/ModelMinigram";
 
 const useStyles = makeStyles((theme) => ({
     markdown: {
@@ -72,8 +73,12 @@ export default function GramsPage(props: any) {
     const classes = useStyles();
     const [data, setData] = useState<Data>()
     const file = localStorage.getItem("file")
-    const reqChannels = props.match.params.channels
+    let reqChannels = undefined
+    if (reqChannels === undefined) {
+        reqChannels = props.match.params.channels
+    }
     const [open, setOpen] = React.useState(false);
+    const [sizeDialog, setSizeDialog] = React.useState(false);
     const [min, setMin] = useState(data?.min)
     const [max, setMax] = useState(data?.max)
     const [valueMin, setMinValue] = useState(0)
@@ -83,6 +88,9 @@ export default function GramsPage(props: any) {
 
     const [f, setF] = useState(0)
     const [samples, setSamples] = useState(0)
+
+    const [height, setHeight] = useState(200)
+    const [tempHeight, setTempHeight] = useState(200)
 
     const [anchorTools, setAnchorTools] = React.useState<null | HTMLElement>(null);
 
@@ -108,6 +116,7 @@ export default function GramsPage(props: any) {
 
     const handleCloseDialog = () => {
         setOpen(false);
+        setSizeDialog(false)
     };
 
     function getFragmentDialog() {
@@ -151,7 +160,7 @@ export default function GramsPage(props: any) {
     if (!window.location.href.includes("txt") && !window.location.href.includes("grams") && f === 0) {
         // @ts-ignore
         setF(+localStorage.getItem("fd"))
-    } else if ( (window.location.href.includes("txt") || window.location.href.includes("grams")) && f === 0) {
+    } else if ((window.location.href.includes("txt") || window.location.href.includes("grams")) && f === 0) {
         if (data?.samplingRate !== undefined) {
             // @ts-ignore
             setF(data?.samplingRate)
@@ -161,11 +170,22 @@ export default function GramsPage(props: any) {
     if (!window.location.href.includes("txt") && !window.location.href.includes("grams") && samples === 0) {
         // @ts-ignore
         setSamples(+localStorage.getItem("samples"))
-    } else if ( (window.location.href.includes("txt") || window.location.href.includes("grams")) && samples === 0) {
+    } else if ((window.location.href.includes("txt") || window.location.href.includes("grams")) && samples === 0) {
         if (data?.samplesNumber !== undefined) {
             // @ts-ignore
             setSamples(data?.samplesNumber)
         }
+    }
+
+    function handleChangeSize() {
+        setSizeDialog(true)
+        setAnchorTools(null)
+    }
+
+    function changeSize() {
+        setSizeDialog(false);
+        setAnchorTools(null)
+        setHeight(tempHeight)
     }
 
     return (
@@ -178,7 +198,7 @@ export default function GramsPage(props: any) {
                 onClose={handleClose}>
                 <MenuItem onClick={getFragment}>Фрагмент</MenuItem>
                 <MenuItem onClick={dropFragment}>Сбросить фрагмент</MenuItem>
-
+                <MenuItem onClick={handleChangeSize}>Изменение высоты графика</MenuItem>
             </Menu>
             <div className={classes.tools}>
                 <Button color="inherit" aria-controls="tools" aria-haspopup="true" onClick={handleClickTools}
@@ -190,15 +210,21 @@ export default function GramsPage(props: any) {
                 </Button>
             </div>
             <div className={classes.abs}>
-                <Minigram func={handleChange} file={file} id={reqChannels.split(";")[0]}/>
+                {(localStorage.getItem('models') !== null && reqChannels.split(";")[0].includes('Model')) ?
+                    (<ModelMinigram func={handleChange} start={data?.start} id={reqChannels.split(";")[0]} fd={f}
+                                    samples={samples}/>)
+                    : (<Minigram func={handleChange} file={file} id={reqChannels.split(";")[0]}/>)}
             </div>
             {(reqChannels.split(";").map((channel: string, number: number) => {
-                if (channel.includes('Model')) {
-                    return <ModelOscillogram start={data?.start} showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file} name={channel}
+                if (localStorage.getItem('models') !== null && channel.includes('Model')) {
+                    return <ModelOscillogram start={data?.start} showMarkers={showMarkers} func={handleChange} min={min}
+                                             max={max} file={file} name={channel} height={height}
                                              fd={f} samples={samples} key={number}/>
                 } else {
-                return <Oscillogram showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file} id={channel}
-                             key={number}/>}
+                    return <Oscillogram showMarkers={showMarkers} func={handleChange} min={min} max={max} file={file}
+                                        id={channel} height={height}
+                                        key={number}/>
+                }
             }))}
             <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Отсчеты</DialogTitle>
@@ -227,6 +253,31 @@ export default function GramsPage(props: any) {
                         Отмена
                     </Button>
                     <Button onClick={getFragmentDialog} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={sizeDialog} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Изменение высоты</DialogTitle>
+                <DialogContent>
+                    <Typography>Текущая высота: {height}</Typography>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        label="Высота графика"
+                        type="number"
+                        defaultValue={height}
+                        onChange={num => setTempHeight(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={changeSize} color="primary">
                         ОК
                     </Button>
                 </DialogActions>

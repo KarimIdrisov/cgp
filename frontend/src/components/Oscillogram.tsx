@@ -5,10 +5,8 @@ import axios from "axios";
 import Highcharts from 'highcharts/highstock'
 import HighchartsReact from 'highcharts-react-official';
 
-import {Button} from "@material-ui/core";
 import {useHistory} from "react-router-dom";
-
-import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import {Menu, MenuItem} from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
     border: {
@@ -20,6 +18,10 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: 'row',
         justifyContent: 'flex-end'
     },
+    name: {
+        display: 'relative',
+        top: 10
+    }
 }));
 
 interface Signal {
@@ -45,7 +47,8 @@ export default function Oscillogram(props: any) {
                 }
             },
             chart: {
-                zoomType: "xy"
+                zoomType: "xy",
+                height: props.height
             },
             title: {
                 text: ''
@@ -74,7 +77,7 @@ export default function Oscillogram(props: any) {
             },
             yAxis: {
                 title: {
-                    text: 'F(x)'
+                    text: props.id
                 },
                 type: 'linear',
                 gridLineWidth: 1
@@ -115,12 +118,31 @@ export default function Oscillogram(props: any) {
         console.log()
     }, [])
 
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
     return (
         <>
+            <Menu
+                id="simple-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+            >
+                <MenuItem onClick={deleteOscillogram}>Удалить осциллограмму</MenuItem>
+            </Menu>
             {(signal?.signalData && signal.signalData.length > 1) ? (
-                    <>
+                    <div onClick={handleClick}>
                         <HighchartsReact constructorType={'chart'} highcharts={Highcharts} options={options}/>
-                    </>)
+                    </div>)
                 : <></>}
         </>
     );

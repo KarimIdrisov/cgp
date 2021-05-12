@@ -5,8 +5,6 @@ import axios from "axios";
 import Highcharts from 'highcharts/highstock'
 import HighchartsReact from 'highcharts-react-official';
 
-import {useHistory} from "react-router-dom";
-
 const useStyles = makeStyles((theme) => ({
     border: {
         border: "1px solid black",
@@ -162,7 +160,6 @@ export default function Minigram(this: any, props: any) {
                 dateTimes: result.data.dateTimes
             });
         }
-
         getData();
     }, [])
 

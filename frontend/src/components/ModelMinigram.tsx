@@ -4,10 +4,6 @@ import React, {useEffect, useState} from 'react';
 import Highcharts from 'highcharts/highstock'
 import HighchartsReact from 'highcharts-react-official';
 
-import {Button, Menu, MenuItem} from "@material-ui/core";
-import {useHistory} from "react-router-dom";
-import Typography from "@material-ui/core/Typography";
-
 const useStyles = makeStyles((theme) => ({
     border: {
         border: "1px solid black",
@@ -18,99 +14,153 @@ const useStyles = makeStyles((theme) => ({
         flexDirection: 'row',
         justifyContent: 'flex-end'
     },
+    active: {
+        backgroundColor: "gray"
+    },
+    gram: {
+        width: "100%",
+    }
 }));
 
-export default function Oscillogram(props: any) {
+export default function ModelMinigram(this: any, props: any) {
+    const classes = useStyles();
     const [name, setName] = useState()
     const [data, setData] = useState<Array<any>>()
     const [times, setTimes] = useState<Array<any>>()
-    const history = useHistory();
-
+    const [send, setState] = useState(false)
+    const [id, setId] = useState()
+    if (id === undefined) {
+        setId(props.id)
+    }
     let model: any
     // @ts-ignore
     const models = JSON.parse(localStorage.getItem("models"))
     for (let i = 0; i < models.length; i++) {
-        if (models[i].name === props.name) {
+        if (models[i].name === id) {
             model = models[i]
             break
         }
     }
 
-    let options = {
-        plotOptions: {
-            series: {
-                marker: {
-                    enabled: props.showMarkers,
+    let options = {}
+    if (data) {
+        options = {
+            plotOptions: {
+                series: {
+                    states: {
+                        hover: {
+                            enabled: false
+                        }
+                    }
                 },
-            }
-        },
-        chart: {
-            zoomType: "xy",
-            height: props.height
-        },
-        title: {
-            text: ''
-        },
-        legend: {
-            enabled: false
-        },
-        xAxis: {
-            title: {
-                text: 'Время'
-            },
-            categories: times?.slice(props.min, props.max),
-            type: 'datetime',
-            resize: {
-                enabled: false
-            },
-            tickInterval: 50,
-            gridLineWidth: 1,
-            labels: {
-                //@ts-ignore
-                formatter: function () {
-                    //@ts-ignore
-                    return new Date(this.value).getHours() + ':' + new Date(this.value).getMinutes() + ':' + new Date(this.value).getSeconds()
+                line: {
+                    color: "white"
                 }
             },
-        },
-        yAxis: {
+            chart: {
+                height: "100px",
+                borderColor: 'white'
+            },
             title: {
-                text: props.name
+                text: ''
             },
-            type: 'linear',
-            gridLineWidth: 1
-        },
-        series: [{
-            type: (model.type === 'impulse' || model.type === 'jump') ? 'column' : 'spline',
-            name: props.name,
-            data: data?.slice(props.min, props.max),
-            dataGrouping: {
-                enabled: true
+            xAxis: {
+                visible: false,
+                ordinal: false,
+                lineColor: "gray",
+                lineWidth: 1,
+                categories: times,
+                type: 'datetime',
+                resize: {
+                    enabled: true
+                },
+                tickInterval: 10,
+                gridLineWidth: 1,
+                labels: {
+                    //@ts-ignore
+                    formatter: function () {
+                        //@ts-ignore
+                        return new Date(this.value).getHours() + ':' + new Date(this.value).getMinutes()
+                    }
+                },
+                events: {
+                    // eslint-disable-next-line no-restricted-globals
+                    afterSetExtremes: function (event: any) {
+                        handleChange(event)
+                    },
+                }
             },
-        }],
-    };
-
-    function deleteOscillogram() {
-        const oldChannels = window.location.href.slice(28)
-        const newChannels = oldChannels.split(';').filter(item => props.name !== item)
-        if (newChannels.length === 0) {
-            if (localStorage.getItem('file') !== null) {
-                history.push('/modeling/' + localStorage.getItem("file"))
-            } else {
-                history.push('/modeling/')
-            }
-        } else {
-            history.push('/grams/' + newChannels.join(';'))
+            yAxis: {
+                height: 0,
+                gridLineWidth: 0,
+                labels: {
+                    enabled: false
+                },
+                visible: false,
+                title: {
+                    text: 'F(x)'
+                },
+                type: 'linear',
+            },
+            series: [{
+                name: props.id,
+                data: data,
+                dataGrouping: {
+                    enabled: false
+                },
+                type: 'spline',
+                color: 'white'
+            }],
+            legend: {
+                enabled: false
+            },
+            tooltip: {
+                enabled: false
+            },
+            stockTools: {
+                gui: {
+                    enabled: false
+                }
+            },
+            rangeSelector: {
+                enabled: false
+            },
+            credits: {
+                enabled: false,
+            },
+            navigator: {
+                adaptToUpdatedData: false,
+                //maskInside: false,
+                series: {
+                    type: (model.type === 'impulse' || model.type === 'jump') ? 'column' : 'spline',
+                    color: 'black',
+                    animation: {
+                        duration: 0,
+                    },
+                },
+                height: 30,
+                xAxis: {
+                    ordinal: false,
+                    labels: {
+                        enabled: false
+                    }
+                },
+            },
+            lineWidth: 0,
+            marker: {
+                enabled: false,
+                states: {
+                    hover: {
+                        enabled: false
+                    }
+                }
+            },
         }
     }
-
     useEffect(() => {
         const dataTmp = []
         const times = []
-        let start = new Date(props.start)
-        if (props.start === undefined) {
-            start = new Date('01-01-2000')
-        }
+        const start = new Date(props.start)
         // @ts-ignore
         const samples = +localStorage.getItem("samples")
         // @ts-ignore
@@ -204,41 +254,42 @@ export default function Oscillogram(props: any) {
         if (model.type === 'linear_module') {
             const args = model.args?.split(':')
             for (let i = 0; i < samples; i++) {
-                dataTmp.push(args[0] * Math.cos(2 * Math.PI * ((+args[1] + ((args[2] - args[1]) * i) / (samples * (1/fd))) * i) + +args[3]))
+                dataTmp.push(args[0] * Math.cos(2 * Math.PI * ((+args[1] + (args[2] - args[1]) / (samples * fd)) * i) + +args[3]))
                 times.push((new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime())
             }
             setData(dataTmp)
             setTimes(times)
             setName(model.name)
         }
-    }, [setData, setName, setTimes]);
+    }, [setTimes, setData])
 
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    function handleRange() {
+        if (send) {
+            setState(false)
+        }
+    }
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
+    function handleChange(e: any) {
+        if (send) {
+            // eslint-disable-next-line no-restricted-globals
+            props.func(e)
+        }
+    }
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    function sendExtremas() {
+        if (!send) {
+            setState(true)
+        }
+    }
+    console.log(data)
 
     return (
-        <>
-            <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                keepMounted
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-            >
-                <MenuItem onClick={deleteOscillogram}>Удалить осциллограмму</MenuItem>
-            </Menu>
-            {(data && data?.length > 1) ? (
-                    <div style={{display: 'absolute'}} onClick={handleClick}>
-                        <HighchartsReact constructorType={'chart'} highcharts={Highcharts} options={options}/>
-                    </div>)
+        <div className={classes.gram} onMouseDown={handleRange} onMouseUp={sendExtremas}>
+            {(data && data.length > 1) ? (
+                    <>
+                        <HighchartsReact constructorType={'stockChart'} highcharts={Highcharts} options={options}/>
+                    </>)
                 : <></>}
-        </>
+        </div>
     );
 }

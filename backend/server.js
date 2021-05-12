@@ -101,7 +101,7 @@ app.get('/get-signal', (req, res) => {
         const signalData = [];
         const channelIndex = channelsName.indexOf(signal)
         for (let i = 12; i < lines.length - 1; i++) {
-                signalData.push(+lines[i].split(' ')[channelIndex])
+            signalData.push(+lines[i].split(' ')[channelIndex])
 
         }
         let reverseStartDay = startDate.split("-")
@@ -216,7 +216,189 @@ app.get('/model-data', (req, res) => {
 });
 
 app.post("/sendModels", (req, res) => {
-    console.log(req.body.fd)
+    // console.log(req.body.fd)
+})
+
+app.post('/saveNewFile', (req, res) => {
+
+    const file = req.query.id + '.txt'
+    const fd = req.query.fd
+    const samples = req.query.samples
+    const names = req.query.names.split(';');
+    const types = req.query.types.split(';');
+    const args = req.query.args.split(';');
+    const startDate = '01-01-2000'
+    const startTime = '00:00:00'
+    let newData = ''
+    newData += '# Channels number\n'
+    newData += names.length + '\n'
+    newData += '# Samples number\n'
+    newData += samples + '\n'
+    newData += '# Sampling rate\n'
+    newData += fd + '\n'
+    newData += '# Start date\n'
+    newData += startDate + '\n'
+    newData += '# Start time\n'
+    newData += startTime + '\n'
+    newData += '# Channels names\n'
+    newData += names.join(';') + '\n'
+
+    const signals = {}
+    for (let i = 0; i < names.length; i++) {
+        signals[names[i]] = []
+    }
+
+    for (let i = 0; i < samples; i++) {
+        for (let j = 0; j < names.length; j++) {
+            if (types[j] === 'impulse') {
+                signals[names[j]].push(i - 12 === args[j] ? 1 : 0)
+            }
+            if (types[j] === 'jump') {
+                signals[names[j]].push(i - 12 >= args[j] ? 1 : 0)
+            }
+            if (types[j] === 'exponent') {
+                signals[names[j]].push(Math.pow(args[j], i - 12))
+            }
+            if (types[j] === 'sin') {
+                const newArgs = args[j].split(':')
+                signals[names[j]].push(newArgs[0] * Math.sin((i - 12) * newArgs[1] + +newArgs[2]))
+            }
+            if (types[j] === 'meandr') {
+                signals[names[j]].push((i - 12) % args[j] > args[j] / 2 ? -1 : 1)
+            }
+            if (types[j] === 'pila') {
+                signals[names[j]].push(((i - 12) % args[j]) / 2)
+            }
+            if (types[j] === 'exp_ogub') {
+                const newArgs = args[j].split(':')
+                signals[names[j]].push(newArgs[0] * Math.exp(-(i - 12) / newArgs[1]) * Math.cos(2 * Math.PI * newArgs[2] * (i - 12) + +newArgs[3]))
+            }
+            if (types[j] === 'balance_ogib') {
+                const newArgs = args[j].split(':')
+                signals[names[j]].push(newArgs[0] * Math.cos(2 * Math.PI * newArgs[1] * (i - 12)) * Math.cos(2 * Math.PI * newArgs[2] * (i - 12) + +newArgs[3]))
+            }
+            if (types[j] === 'tonal_ogib') {
+                const newArgs = args[j].split(':')
+                signals[names[j]].push(newArgs[0] * (1 + newArgs[4] * Math.cos(2 * Math.PI * newArgs[1] * (i - 12))) * Math.cos(2 * Math.PI * newArgs[2] * (i - 12) + +newArgs[3]))
+            }
+            if (types[j] === 'linear_module') {
+                const newArgs = args[j].split(':')
+                signals[names[j]].push(newArgs[0] * Math.cos(2 * Math.PI * ((+newArgs[1] + (newArgs[2] - newArgs[1]) / (samplesNumber * samplingRate)) * (i - 12)) + +newArgs[3]))
+            }
+        }
+    }
+    for (let i = 0; i < samples; i++) {
+        let line = ''
+        for (let j = 0; j < names.length; j++) {
+            line += signals[names[j]][i] + ' '
+        }
+        newData += line + '\n'
+    }
+    const start = Date.now()
+    fs.writeFile(`@/../saves/${file}`, newData, function (error) {
+        if (error) throw error; // если возникла ошибка
+        console.log(`Асинхронная запись файла завершена за ${Date.now() - start}`);
+
+    });
+})
+
+app.post("/updateFile", (req, res) => {
+    const file = "file-" + req.query.id;
+    fs.readFile(`@/../uploads/${file}`, 'utf8', (err, data) => {
+        if (err) {
+            console.error(err)
+            return
+        }
+        const names = req.query.names.split(';');
+        const types = req.query.types.split(';');
+        const args = req.query.args.split(';');
+        let lines = data.split(/\r?\n/);
+
+        let channelsNumber = lines[1];
+        const samplesNumber = lines[3];
+        const samplingRate = lines[5];
+        const startDate = lines[7]
+        const startTime = lines[9];
+        let channelsName = lines[11].split(';');
+        channelsName = channelsName.slice(0, +channelsNumber);
+        channelsNumber = +channelsNumber + +names.length
+        names.forEach(channel => channelsName.push(channel));
+
+        const signals = {}
+        for (let i = 0; i < channelsNumber; i++) {
+            signals[channelsName[i]] = []
+        }
+
+        for (let i = 12; i < lines.length - 1; i++) {
+            for (let j = 0; j < channelsNumber - names.length; j++) {
+                signals[channelsName[j]].push(lines[i].split(' ')[j])
+            }
+            for (let j = 0; j < names.length; j++) {
+                if (types[j] === 'impulse') {
+                    signals[names[j]].push(i - 12 === args[j] ? 1 : 0)
+                }
+                if (types[j] === 'jump') {
+                    signals[names[j]].push(i - 12 >= args[j] ? 1 : 0)
+                }
+                if (types[j] === 'exponent') {
+                    signals[names[j]].push(Math.pow(args[j], i - 12))
+                }
+                if (types[j] === 'sin') {
+                    const newArgs = args[j].split(':')
+                    signals[names[j]].push(newArgs[0] * Math.sin((i - 12) * newArgs[1] + +newArgs[2]))
+                }
+                if (types[j] === 'meandr') {
+                    signals[names[j]].push((i - 12) % args[j] > args[j] / 2 ? -1 : 1)
+                }
+                if (types[j] === 'pila') {
+                    signals[names[j]].push(((i - 12) % args[j]) / 2)
+                }
+                if (types[j] === 'exp_ogub') {
+                    const newArgs = args[j].split(':')
+                    signals[names[j]].push(newArgs[0] * Math.exp(-(i - 12) / newArgs[1]) * Math.cos(2 * Math.PI * newArgs[2] * (i - 12) + +newArgs[3]))
+                }
+                if (types[j] === 'balance_ogib') {
+                    const newArgs = args[j].split(':')
+                    signals[names[j]].push(newArgs[0] * Math.cos(2 * Math.PI * newArgs[1] * (i - 12)) * Math.cos(2 * Math.PI * newArgs[2] * (i - 12) + +newArgs[3]))
+                }
+                if (types[j] === 'tonal_ogib') {
+                    const newArgs = args[j].split(':')
+                    signals[names[j]].push(newArgs[0] * (1 + newArgs[4] * Math.cos(2 * Math.PI * newArgs[1] * (i - 12))) * Math.cos(2 * Math.PI * newArgs[2] * (i - 12) + +newArgs[3]))
+                }
+                if (types[j] === 'linear_module') {
+                    const newArgs = args[j].split(':')
+                    signals[names[j]].push(newArgs[0] * Math.cos(2 * Math.PI * ((+newArgs[1] + (newArgs[2] - newArgs[1]) / (samplesNumber * samplingRate)) * (i - 12)) + +newArgs[3]))
+                }
+            }
+        }
+        let newData = ''
+        newData += '# Channels number\n'
+        newData += channelsNumber + '\n'
+        newData += '# Samples number\n'
+        newData += samplesNumber + '\n'
+        newData += '# Sampling rate\n'
+        newData += samplingRate + '\n'
+        newData += '# Start date\n'
+        newData += startDate + '\n'
+        newData += '# Start time\n'
+        newData += startTime + '\n'
+        newData += '# Channels names\n'
+        newData += channelsName + '\n'
+        for (let i = 0; i < samplesNumber; i++) {
+            let line = ''
+            for (let j = 0; j < channelsNumber; j++) {
+                line += signals[channelsName[j]][i] + ' '
+            }
+            newData += line + '\n'
+        }
+
+        const start = Date.now()
+        fs.writeFile(`@/../uploads/${file}`, newData, function (error) {
+            if (error) throw error; // если возникла ошибка
+            console.log(`Асинхронная запись файла завершена за ${Date.now() - start}`);
+
+        });
+    })
 })
 
 app.post('/upload', function (req, res) {
@@ -227,13 +409,10 @@ app.post('/upload', function (req, res) {
             return res.status(500).json(err)
         } else if (err) {
             console.log(err)
-
             return res.status(500).json(err)
         }
         return res.status(200).send(req.file)
-
     })
-
 });
 
 app.listen(port, () => {
