@@ -25,10 +25,10 @@ export default function RandomSignals(props: any) {
     const [openRegression, setOpenRegression] = React.useState(false);
 
     const [startInterval, setStartInterval] = React.useState(0)
-    const [endInterval, setEndInterval] = React.useState(0)
+    const [endInterval, setEndInterval] = React.useState(1)
 
     const [averageLaw, setAverageLaw] = React.useState(0)
-    const [dispersionLaw, setDispersionLaw] = React.useState(0)
+    const [dispersionLaw, setDispersionLaw] = React.useState(1)
 
     const [dispersionRegression, setDispersionRegression] = React.useState(0)
     const [p, setP] = React.useState(0)
@@ -131,8 +131,8 @@ export default function RandomSignals(props: any) {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
                 className={classes.menu}>
-                <MenuItem onClick={openWhiteEqualDialog} id='whiteEqual'>Сигнал белого шума, равномерно распределенный в интервале [a,b]</MenuItem>
-                <MenuItem onClick={openWhiteLawDialog} id='whiteLaw'>Сигнал белого шума, распределенный по нормальному закону с заданными средним и дисперсией</MenuItem>
+                <MenuItem onClick={openWhiteEqualDialog} id='whiteEqual'>Сигнал белого шума (равномерный)</MenuItem>
+                <MenuItem onClick={openWhiteLawDialog} id='whiteLaw'>Сигнал белого шума (нормальный)</MenuItem>
                 <MenuItem onClick={openRegressionDialog} id='regression'>Случайный сигнал авторегрессии</MenuItem>
             </Menu>
 

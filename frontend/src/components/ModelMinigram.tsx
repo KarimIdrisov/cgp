@@ -3,6 +3,12 @@ import React, {useEffect, useState} from 'react';
 
 import Highcharts from 'highcharts/highstock'
 import HighchartsReact from 'highcharts-react-official';
+import whiteEqual from "../models/whiteEqual";
+import getTimes from "../utils/getTimes";
+import whiteLaw from "../models/whiteLaw";
+import regression from "../models/regression";
+import linearSuperposition from "../models/linearSuperposition";
+import multiplicativeSuperposition from "../models/multiplicativeSuperposition";
 
 const useStyles = makeStyles((theme) => ({
     border: {
@@ -258,6 +264,34 @@ export default function ModelMinigram(this: any, props: any) {
             }
             setData(dataTmp)
             setTimes(times)
+            setName(model.name)
+        }
+        if (model.type === 'whiteEqual') {
+            const args = model.args?.split(':')
+            setData(whiteEqual(samples, fd, args[0], args[1], true))
+            setTimes(getTimes(start, fd, samples))
+            setName(model.name)
+        }
+        if (model.type === 'whiteLaw') {
+            const args = model.args?.split(':')
+            setData(whiteLaw(samples, fd, args[0], args[1], true))
+            setTimes(getTimes(start, fd, samples))
+            setName(model.name)
+        }
+        if (model.type === 'regression') {
+            const args = model.args?.split(':')
+            setData(regression(samples, fd, args[0], args[1], args[2], args[3], args[4], true))
+            setTimes(getTimes(start, fd, samples))
+            setName(model.name)
+        }
+        if (model.type === 'linear') {
+            const args = model.args?.split(':')
+            setData(linearSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
+            setName(model.name)
+        }
+        if (model.type === 'multiplicative') {
+            const args = model.args?.split(':')
+            setData(multiplicativeSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
             setName(model.name)
         }
     }, [setTimes, setData])

@@ -9,6 +9,8 @@ import whiteEqual from "../models/whiteEqual";
 import whiteLaw from "../models/whiteLaw";
 import regression from "../models/regression";
 import getTimes from "../utils/getTimes";
+import linearSuperposition from "../models/linearSuperposition";
+import multiplicativeSuperposition from "../models/multiplicativeSuperposition";
 
 export default function Oscillogram(props: any) {
     const [name, setName] = useState()
@@ -220,6 +222,16 @@ export default function Oscillogram(props: any) {
             const args = model.args?.split(':')
             setData(regression(samples, fd, args[0], args[1], args[2], args[3], args[4], true))
             setTimes(getTimes(start, fd, samples))
+            setName(model.name)
+        }
+        if (model.type === 'linear') {
+            const args = model.args?.split(':')
+            setData(linearSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
+            setName(model.name)
+        }
+        if (model.type === 'multiplicative') {
+            const args = model.args?.split(':')
+            setData(multiplicativeSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
             setName(model.name)
         }
     }, [setData, setName, setTimes]);

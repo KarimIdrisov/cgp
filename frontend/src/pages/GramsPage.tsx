@@ -138,6 +138,11 @@ export default function GramsPage(props: any) {
                 setOpen(false);
                 setAnchorTools(null)
             }
+        } else {
+            setMin(valueMin)
+            setMax(valueMax)
+            setOpen(false);
+            setAnchorTools(null)
         }
     }
 
@@ -227,7 +232,7 @@ export default function GramsPage(props: any) {
                     </ToggleButton>
                 </ToggleButtonGroup>
             </div>
-            <Typography>Начало - {min?.toFixed()}, Конец - {max?.toFixed()}</Typography>
+            <Typography>Начало - {min?.toFixed() ? min?.toFixed() : 0}, Конец - {max?.toFixed() ? max?.toFixed() : localStorage.getItem('samples') as string}</Typography>
             <div className={classes.abs}>
                 {(reqChannels.split(";")[0].includes('Model') && localStorage.getItem('models') !== null) ?
                     (<ModelMinigram func={handleChange} start={data?.start} id={reqChannels.split(";")[0]}

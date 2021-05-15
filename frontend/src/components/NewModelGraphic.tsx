@@ -5,6 +5,8 @@ import {useHistory} from "react-router-dom";
 import whiteEqual from "../models/whiteEqual";
 import whiteLaw from '../models/whiteLaw';
 import regression from "../models/regression";
+import linearSuperposition from "../models/linearSuperposition";
+import multiplicativeSuperposition from "../models/multiplicativeSuperposition";
 
 interface Model {
     type: string,
@@ -132,6 +134,16 @@ export default function NewModelGraphic(props: any) {
         if (props.id === 'regression') {
             const args = props.args?.split(':')
             setData(regression(samples, fd, args[0], args[1], args[2], args[3], args[4]))
+            setName(props.name)
+        }
+        if (props.id === 'linear') {
+            const args = props.args?.split(':')
+            setData(linearSuperposition(samples, fd, args[0], args[1], args[2], args[3]))
+            setName(props.name)
+        }
+        if (props.id === 'multiplicative') {
+            const args = props.args?.split(':')
+            setData(multiplicativeSuperposition(samples, fd, args[0], args[1], args[2], args[3]))
             setName(props.name)
         }
     }, [setData, setName]);

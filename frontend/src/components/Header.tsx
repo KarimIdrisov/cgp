@@ -5,7 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import {Link, useHistory} from 'react-router-dom';
 import {
-    Button,
+    Button, Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
@@ -22,6 +22,11 @@ import getType from "../utils/getType";
 import getParamsNames from "../utils/getParamsNames";
 import Superposition from "./Models/Superposition";
 import dropData from '../utils/dropData';
+
+interface Channel {
+    name: string,
+    type: string,
+}
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -161,7 +166,6 @@ export default function Header(props: { title: any, file: any, update: any }) {
             if (result.data !== undefined) {
                 setData(result.data);
             }
-            console.log(result.data.samplesNumber)
             if (result.data.samplesNumber !== undefined && localStorage.getItem('file') !== null) {
                 console.log('file')
                 localStorage.setItem('samples', result.data.samplesNumber.toString())
@@ -175,7 +179,6 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 const sampl = +localStorage.getItem('samples');
                 // @ts-ignore
                 const f = +localStorage.getItem('fd');
-                console.log(sampl)
                 setArgument(+(result.data.samplesNumber / 8).toFixed())
                 setArgument(+(sampl / 8).toFixed())
                 setAmpl(1)
@@ -205,15 +208,10 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 setLinearNesuch((f / 2) / (sampl / 100))
                 setLinearOgib((f / 4) / (sampl / 10))
             } else {
-                console.log('not file')
-                // @ts-ignore
-                setSamples(+localStorage.getItem('samples'))
-                // @ts-ignore
-                setF(+localStorage.getItem('fd'))
-                // @ts-ignore
-                const sampl = +localStorage.getItem('samples');
-                // @ts-ignore
-                const f = +localStorage.getItem('fd');
+                setSamples(+(localStorage.getItem('samples') as string))
+                setF(+(localStorage.getItem('fd') as string))
+                const sampl = +(localStorage.getItem('samples') as string);
+                const f = +(localStorage.getItem('fd') as string);
                 setArgument(+(sampl / 8).toFixed())
                 setAmpl(1)
                 setExponent(0.99)
@@ -332,7 +330,10 @@ export default function Header(props: { title: any, file: any, update: any }) {
     const [hide, setHide] = useState(true)
     const [saveNewFile, setSaveNewFile] = useState(false)
 
+    const [names, setNames] = React.useState<string>()
+
     const handleCloseDialog = () => {
+        setNames('')
         setOpenInfo(false);
         setOpenModels(false);
         setOpenComplexModels(false);
@@ -506,18 +507,20 @@ export default function Header(props: { title: any, file: any, update: any }) {
     }
 
     function updateFile() {
-        const models = JSON.parse(localStorage.getItem('models') as string)
-        const names: any[] = []
+        let models = JSON.parse(localStorage.getItem('models') as string)
+        const local_names: any[] = []
         const types: any[] = []
         const args: any[] = []
         const file = localStorage.getItem('file')
+        models = models.filter( (model: any) => names?.split(';').includes(model.name))
+        setNames('')
         models.forEach((model: any) => {
-            names.push(model.name)
+            local_names.push(model.name)
             types.push(model.type)
             args.push(model.args)
         })
 
-        axios.post(`http://localhost:3081/updateFile/?id=${file}&names=${names.join(';')}&types=${types.join(';')}&args=${args.join(';')}`)
+        axios.post(`http://localhost:3081/updateFile/?id=${file}&names=${local_names.join(';')}&types=${types.join(';')}&args=${args.join(';')}`)
         setSaveModels(false)
 
     }
@@ -534,18 +537,20 @@ export default function Header(props: { title: any, file: any, update: any }) {
 
     function saveNewFileAs() {
         setSaveNewFile(false)
-        const models = JSON.parse(localStorage.getItem('models') as string)
-        const names: any[] = []
+        let models = JSON.parse(localStorage.getItem('models') as string)
+        const local_names: any[] = []
         const types: any[] = []
         const args: any[] = []
+        models = models.filter( (model: any) => names?.split(';').includes(model.name))
+        setNames('')
         models.forEach((model: any) => {
-            names.push(model.name)
+            local_names.push(model.name)
             types.push(model.type)
             args.push(model.args)
         })
         const f = localStorage.getItem('fd')
         const samples = localStorage.getItem('samples')
-        axios.post(`http://localhost:3081/saveNewFile/?id=${modelsFile}&fd=${f}&samples=${samples}&names=${names.join(';')}&types=${types.join(';')}&args=${args.join(';')}`)
+        axios.post(`http://localhost:3081/saveNewFile/?id=${modelsFile}&fd=${f}&samples=${samples}&names=${local_names.join(';')}&types=${types.join(';')}&args=${args.join(';')}`)
     }
 
     function getOgibNesuch(name: string) {
@@ -643,6 +648,24 @@ export default function Header(props: { title: any, file: any, update: any }) {
         }
     }
 
+    const handleChangeNames = (event: React.ChangeEvent<HTMLInputElement>) => {
+        let tmp_names: any[] = []
+
+        if (names !== undefined && names.split(';').length > 0) {
+            tmp_names = names.split(';')
+        }
+
+        const name = event.target.id.toString()
+
+        if (tmp_names.includes(name)) {
+            tmp_names = tmp_names.filter(channel => channel !== name)
+            setNames(tmp_names.join(';'))
+            return
+        }
+        tmp_names.push(name)
+        setNames(tmp_names.join(';'))
+    };
+
     return (
         <>
             <Alert className={clsx({[classes.hide]: hide})} onClose={() => {
@@ -656,7 +679,46 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         - {data?.samplingRate !== undefined ? data?.samplingRate : localStorage.getItem('fd')}</Typography>
                     <Typography>Кол-во отсчетов
                         - {data?.samplesNumber !== undefined ? data?.samplesNumber : localStorage.getItem('samples')}</Typography>
-                    <Typography>Добавленные модели - {getName()}</Typography>
+                    <Table size="small" aria-label="a dense table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Имя сигнала</TableCell>
+                                <TableCell align="center"></TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data && data?.channelsName ? (data?.channelsName.map((channel: string) => (
+                                <TableRow key={channel}>
+                                    <TableCell component="th" scope="row">
+                                        {channel}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Checkbox
+                                            id={channel}
+                                            color="primary"
+                                            inputProps={{'aria-label': 'secondary checkbox'}}
+                                            onChange={handleChangeNames}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))) : (<></>)}
+                            {JSON.parse(localStorage.getItem('models') as string) ? (JSON.parse(localStorage.getItem('models') as string).map((channel: Channel) => (
+                                <TableRow key={channel.name}>
+                                    <TableCell component="th" scope="row">
+                                        {channel.name}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Checkbox
+                                            id={channel.name}
+                                            color="primary"
+                                            inputProps={{'aria-label': 'secondary checkbox'}}
+                                            onChange={handleChangeNames}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))) : (<></>)}
+                        </TableBody>
+                    </Table>
                     <TextField
                         style={{marginRight: '10px'}}
                         autoFocus
@@ -686,7 +748,47 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         - {data?.samplingRate !== undefined ? data?.samplingRate : localStorage.getItem('fd')}</Typography>
                     <Typography>Кол-во отсчетов
                         - {data?.samplesNumber !== undefined ? data?.samplesNumber : localStorage.getItem('samples')}</Typography>
-                    <Typography>Добавленные модели - {getName()}</Typography>
+                    <Typography>Добавление моделей</Typography>
+                    <Table size="small" aria-label="a dense table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Имя сигнала</TableCell>
+                                <TableCell align="center"></TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data && data?.channelsName ? (data?.channelsName.map((channel: string) => (
+                                <TableRow key={channel}>
+                                    <TableCell component="th" scope="row">
+                                        {channel}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Checkbox
+                                            id={channel}
+                                            color="primary"
+                                            inputProps={{'aria-label': 'secondary checkbox'}}
+                                            onChange={handleChangeNames}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))) : (<></>)}
+                            {JSON.parse(localStorage.getItem('models') as string) ? (JSON.parse(localStorage.getItem('models') as string).map((channel: Channel) => (
+                                <TableRow key={channel.name}>
+                                    <TableCell component="th" scope="row">
+                                        {channel.name}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Checkbox
+                                            id={channel.name}
+                                            color="primary"
+                                            inputProps={{'aria-label': 'secondary checkbox'}}
+                                            onChange={handleChangeNames}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))) : (<></>)}
+                        </TableBody>
+                    </Table>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog} color="primary">
@@ -733,7 +835,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 </DialogActions>
             </Dialog>
             <Dialog open={openSinusoida} onClose={handleClose} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Задание данных</DialogTitle>
+                <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
                 <DialogContent>
                     <Typography>Тип: {getType(current)}</Typography>
                     <Typography>Частота
@@ -793,7 +895,6 @@ export default function Header(props: { title: any, file: any, update: any }) {
                         <p>Частота дискретизации – {data?.samplingRate} Гц(шаг между отсчетами {data?.time} сек.)</p>
                         <p>Дата и время начала записи - {data?.start}</p>
                         <p>Дата и время окончания записи - {data?.end}</p>
-                        <p>Продолжительность - </p>
                         <p>Информация о каналах</p>
                         <Table size="small" aria-label="a dense table">
                             <TableHead>
@@ -809,6 +910,16 @@ export default function Header(props: { title: any, file: any, update: any }) {
                                             {channel}
                                         </TableCell>
                                         <TableCell align="center">Файл: {localStorage.getItem('file')}</TableCell>
+                                    </TableRow>
+                                ))) : (<></>)}
+                                {JSON.parse(localStorage.getItem('models') as string) !== null ? (JSON.parse(localStorage.getItem('models') as string).map((channel: Channel) => (
+                                    <TableRow key={channel.name}>
+                                        <TableCell component="th" scope="row">
+                                            {channel.name}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            Модель: {getType(channel.type)}
+                                        </TableCell>
                                     </TableRow>
                                 ))) : (<></>)}
                             </TableBody>
@@ -1087,7 +1198,7 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 <MenuItem onClick={newComplexSignal} id={'linear_module'}>Сигнал с линейной частотной
                     модуляцией</MenuItem>
                 <RandomSignals update={props.update} close={handleClose}/>
-                <Superposition channelsFile={data?.channelsName}/>
+                <Superposition channelsFile={data?.channelsName} update={props.update} close={handleClose}/>
             </Menu>
         </>
     );

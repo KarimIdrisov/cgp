@@ -309,6 +309,7 @@ app.post("/updateFile", (req, res) => {
             return
         }
         const names = req.query.names.split(';');
+        console.log(names)
         const types = req.query.types.split(';');
         const args = req.query.args.split(';');
         let lines = data.split(/\r?\n/);

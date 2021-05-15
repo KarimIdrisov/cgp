@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import {
     Button, Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
-    DialogTitle,
-    MenuItem, Table, TableBody, TableCell,
+    DialogTitle, InputLabel,
+    MenuItem, Select, Table, TableBody, TableCell,
     TableHead, TableRow,
     TextField
 } from "@material-ui/core";
@@ -45,9 +45,28 @@ export default function Superposition(props: any) {
     };
 
     const [checked, setChecked] = React.useState(true);
+    const [superpositionType, setSuperpositionType] = React.useState('linear')
+
+    const [current, setCurrent] = useState('linear')
 
     function getSuperPositionModel() {
         setOpenSuperPositions(false)
+        props.close()
+        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
+        const signal = [{
+            type: current,
+            args: `${first}:${names}:${argsNames}:${args}`,
+            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
+        }]
+        if (oldSignals !== null) {
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
+        }
+        setNames('')
+        setArgs('')
+        setArgsNames('')
+        props.update()
     }
 
     const handleChangeNames = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,23 +94,30 @@ export default function Superposition(props: any) {
         const arg = event.target.value.toString()
         const name = event.target.id.toString()
 
-        if (argsNames !== undefined && argsNames.split(';').length > 1 && args !== undefined) {
+        if (argsNames !== undefined && args !== undefined) {
             tmp_names = argsNames.split(';')
             tmp_arguments = args.split(';')
             if (tmp_names.includes(name)) {
-
+                tmp_arguments[tmp_names.indexOf(name)] = arg
+            } else {
+                tmp_names.push(name)
+                tmp_arguments.push(arg)
             }
         } else {
             tmp_names.push(name)
             tmp_arguments.push(arg)
         }
-        console.log(tmp_names, tmp_arguments)
 
         setArgs(tmp_arguments.join(';'))
         setArgsNames(tmp_names.join(';'))
     }
 
-    console.log(args, argsNames)
+    function handleChange(event: React.ChangeEvent<{ value: unknown }>) {
+        setSuperpositionType(event.target.value as string)
+        setCurrent(event.target.value as string)
+    }
+
+    const [first, setFirst] = React.useState(0)
 
     return (
         <>
@@ -100,6 +126,27 @@ export default function Superposition(props: any) {
             <Dialog open={openSuperPositions} onClose={handleClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
                 <DialogContent>
+                    <InputLabel id="demo-simple-select-label">Тип суперпозиции</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={superpositionType}
+                        onChange={handleChange}>
+                        <MenuItem value={'linear'}>Линейная суперпозиция</MenuItem>
+                        <MenuItem value={'multiplicative'}>Мультипликативная</MenuItem>
+                    </Select>
+                    <div>
+                        <TextField
+                            style={{marginRight: '10px'}}
+                            autoFocus
+                            margin="dense"
+                            variant='outlined'
+                            label='А0'
+                            type="number"
+                            defaultValue={first}
+                            onChange={name => setFirst(+name.target.value)}
+                        />
+                    </div>
                     <Table size="small" aria-label="a dense table">
                         <TableHead>
                             <TableRow>
@@ -142,6 +189,7 @@ export default function Superposition(props: any) {
                                     </TableCell>
                                     <TableCell align="center">
                                         <Checkbox
+                                            id={channel.name}
                                             color="primary"
                                             inputProps={{'aria-label': 'secondary checkbox'}}
                                             onChange={handleChangeNames}
@@ -149,6 +197,7 @@ export default function Superposition(props: any) {
                                     </TableCell>
                                     <TableCell align="center">
                                         <TextField
+                                            id={channel.name}
                                             style={{marginRight: '10px'}}
                                             autoFocus
                                             margin="dense"
