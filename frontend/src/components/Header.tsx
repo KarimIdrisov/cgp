@@ -21,6 +21,7 @@ import RandomSignals from "./Models/RandomSignals";
 import getType from "../utils/getType";
 import getParamsNames from "../utils/getParamsNames";
 import Superposition from "./Models/Superposition";
+import dropData from '../utils/dropData';
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -156,13 +157,12 @@ export default function Header(props: { title: any, file: any, update: any }) {
 
     useEffect(() => {
         async function getData() {
-            console.log('work')
             const result = await axios.get('http://localhost:3081/model-data/?id=' + props.file);
             if (result.data !== undefined) {
                 setData(result.data);
             }
-            console.log(data)
-            if (result.data.samplesNumber !== undefined) {
+            console.log(result.data.samplesNumber)
+            if (result.data.samplesNumber !== undefined && localStorage.getItem('file') !== null) {
                 console.log('file')
                 localStorage.setItem('samples', result.data.samplesNumber.toString())
                 localStorage.setItem('fd', result.data.samplingRate.toString())
@@ -245,6 +245,75 @@ export default function Header(props: { title: any, file: any, update: any }) {
         }
 
         getData();
+
+        if (window.location.href.includes('grams')) {
+            if (localStorage.getItem('file') !== null) {
+                // @ts-ignore
+                const sampl = +localStorage.getItem('samples');
+                // @ts-ignore
+                const f = +localStorage.getItem('fd');
+                setArgument(+(sampl / 8).toFixed())
+                setAmpl(1)
+                setExponent(0.99)
+                setStartPhase(3.14)
+                if (sampl < 100000) {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+                } else {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 2))))
+                }
+                setOgib(sampl / 5)
+                setNesuch(25 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+
+                setBalanceNesuch(f / 20 / (sampl / 1000))
+                setBalanceOgib(f / 400 / (sampl / 1000))
+
+                if (sampl < 100000) {
+                    setTonalNesuch(f / 20 / (sampl / 1000))
+                    setTonalOgib(f / 400 / (sampl / 1000))
+                    setGlubina(0.5)
+                } else {
+                    setGlubina(0.5)
+                    setTonalOgib((f / 2) / (sampl / 10))
+                    setTonalNesuch((f / 2) / 1000 / (sampl / 100000))
+                }
+
+                setLinearNesuch((f / 2) / (sampl / 100))
+                setLinearOgib((f / 4) / (sampl / 10))
+            } else {
+                // @ts-ignore
+                const sampl = +localStorage.getItem('samples');
+                // @ts-ignore
+                const f = +localStorage.getItem('fd');
+                setArgument(+(sampl / 8).toFixed())
+                setAmpl(1)
+                setExponent(0.99)
+                setStartPhase(3.14)
+                if (sampl < 100000) {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+                } else {
+                    setCircle(35 / (Math.pow(10, (sampl.toString().split('').length - 2))))
+                }
+                setOgib(sampl / 5)
+                setNesuch(25 / (Math.pow(10, (sampl.toString().split('').length - 1))))
+
+                setBalanceNesuch(f / 20 / (sampl / 1000))
+                setBalanceOgib(f / 400 / (sampl / 1000))
+
+                if (sampl < 100000) {
+                    setTonalNesuch(f / 20 / (sampl / 1000))
+                    setTonalOgib(f / 400 / (sampl / 1000))
+                    setGlubina(0.5)
+                } else {
+                    setGlubina(0.5)
+                    setTonalOgib((f / 2) / (sampl / 10))
+                    setTonalNesuch((f / 2) / 1000 / (sampl / 100000))
+                }
+
+                setLinearNesuch((f / 2) / (sampl / 100))
+                setLinearOgib((f / 4) / (sampl / 10))
+            }
+        }
+
     }, [setData, setSamples, setF]);
 
     function getInfo() {
@@ -477,28 +546,6 @@ export default function Header(props: { title: any, file: any, update: any }) {
         const f = localStorage.getItem('fd')
         const samples = localStorage.getItem('samples')
         axios.post(`http://localhost:3081/saveNewFile/?id=${modelsFile}&fd=${f}&samples=${samples}&names=${names.join(';')}&types=${types.join(';')}&args=${args.join(';')}`)
-        console.log('File saved')
-    }
-
-    const args = {
-        'impulse': 'Задержка импульса',
-        'jump': 'Задержка скачка',
-        'exponent': 'a (от 0 до 1)',
-        'sin': ['Амплитуда', 'Круговая частота ([0, Pi])', 'Начальная фаза ([0, 2Pi])'],
-        'meandr': 'Период',
-        'pila': 'Период',
-        'exp_ogub': ['Амплитуда сигнала', 'Параметр ширины огибающей', 'Частота несущей ([0, 0.5fd])', 'Начальная фаза несущей'],
-        'balance_ogib': ['Амплитуда сигнала', 'Частота огибающей', 'Частота несущей ([0, 0.5fd])', 'Начальная фаза несущей'],
-        'tonal_ogib': ['Амплитуда сигнала', 'Частота огибающей', 'Частота несущей ([0, 0.5fd])', 'Начальная фаза несущей', 'Индекс глубины модуляции (от 0 до 1)'],
-        'linear_module': ['Амплитуда', 'Частота в начальный момент времени', 'Частота в конечный момент времени', 'Начальная фаза']
-    }
-
-    function dropData() {
-        localStorage.removeItem('file')
-        localStorage.removeItem('models')
-        localStorage.removeItem('start')
-        localStorage.removeItem('samples')
-        localStorage.removeItem('fd')
     }
 
     function getOgibNesuch(name: string) {
@@ -1039,8 +1086,8 @@ export default function Header(props: { title: any, file: any, update: any }) {
                 <MenuItem onClick={newTonalOgib} id={'tonal_ogib'}>Сигнал с тональной огибающей</MenuItem>
                 <MenuItem onClick={newComplexSignal} id={'linear_module'}>Сигнал с линейной частотной
                     модуляцией</MenuItem>
-                <RandomSignals/>
-                <Superposition/>
+                <RandomSignals update={props.update} close={handleClose}/>
+                <Superposition channelsFile={data?.channelsName}/>
             </Menu>
         </>
     );

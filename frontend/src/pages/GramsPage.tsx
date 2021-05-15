@@ -104,11 +104,6 @@ export default function GramsPage(props: any) {
         }
 
         getData();
-        if (data?.samplesNumber !== undefined) {
-            localStorage.setItem('samples', data?.samplesNumber.toString())
-            localStorage.setItem('fd', data?.samplingRate.toString())
-            localStorage.setItem('start', data?.start)
-        }
     }, [setData]);
 
     const handleClickTools = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -128,19 +123,21 @@ export default function GramsPage(props: any) {
     };
 
     function getFragmentDialog() {
-        if (min!! < data!!.min || min!! > data!!.max || max!! < data!!.min || max!! > data!!.max) {
-            alert.show('Неверные значения промежутка')
-            setAnchorTools(null)
-        } else {
-            if (valueMin > valueMax) {
-                let tmp = valueMin
-                setMinValue(valueMax)
-                setMaxValue(tmp)
+        if (localStorage.getItem('file') !== null) {
+            if (min!! < data!!.min || min!! > data!!.max || max!! < data!!.min || max!! > data!!.max) {
+                alert.show('Неверные значения промежутка')
+                setAnchorTools(null)
+            } else {
+                if (valueMin > valueMax) {
+                    let tmp = valueMin
+                    setMinValue(valueMax)
+                    setMaxValue(tmp)
+                }
+                setMin(valueMin)
+                setMax(valueMax)
+                setOpen(false);
+                setAnchorTools(null)
             }
-            setMin(valueMin)
-            setMax(valueMax)
-            setOpen(false);
-            setAnchorTools(null)
         }
     }
 

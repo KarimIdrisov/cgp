@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-export default function RandomSignals() {
+export default function RandomSignals(props: any) {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -29,6 +29,12 @@ export default function RandomSignals() {
 
     const [averageLaw, setAverageLaw] = React.useState(0)
     const [dispersionLaw, setDispersionLaw] = React.useState(0)
+
+    const [dispersionRegression, setDispersionRegression] = React.useState(0)
+    const [p, setP] = React.useState(0)
+    const [r, setR] = React.useState(0)
+    const [pNums, setPNums] = React.useState(' ')
+    const [rNums, setRNums] = React.useState(' ')
 
     const handleCloseDialog = () => {
         setOpenWhiteEqual(false);
@@ -64,7 +70,53 @@ export default function RandomSignals() {
     }
 
     function getNewModelWhiteEqual() {
+        props.close()
+        setOpenWhiteEqual(false)
+        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
+        const signal = [{
+            type: current,
+            args: `${startInterval}:${endInterval}`,
+            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
+        }]
+        if (oldSignals !== null) {
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
+        }
+        props.update()
+    }
 
+    function getNewModelWhiteLaw() {
+        props.close()
+        setOpenWhiteLaw(false)
+        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
+        const signal = [{
+            type: current,
+            args: `${averageLaw}:${dispersionLaw}`,
+            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
+        }]
+        if (oldSignals !== null) {
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
+        }
+        props.update()
+    }
+    function getNewModelRegression() {
+        props.close()
+        setOpenRegression(false)
+        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
+        const signal = [{
+            type: current,
+            args: `${dispersionRegression}:${p}:${r}:${pNums}:${rNums}`,
+            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
+        }]
+        if (oldSignals !== null) {
+            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
+        } else {
+            localStorage.setItem('models', JSON.stringify(signal))
+        }
+        props.update()
     }
 
     const [current, setCurrent] = useState('')
@@ -156,12 +208,78 @@ export default function RandomSignals() {
                     <Button onClick={handleCloseDialog} color="primary">
                         Отмена
                     </Button>
-                    <Button onClick={getNewModelWhiteEqual} color="primary">
+                    <Button onClick={getNewModelWhiteLaw} color="primary">
                         ОК
                     </Button>
                 </DialogActions>
             </Dialog>
 
+            <Dialog open={openRegression} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
+                <DialogContent>
+                    <Typography>Тип: {getType(current)}</Typography>
+                    <Typography>Частота
+                        дискретизации: {localStorage.getItem('fd')}</Typography>
+                    <Typography>Кол-во
+                        отсчетов: {localStorage.getItem('samples')}</Typography>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        variant='outlined'
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
+                        type="number"
+                        defaultValue={p}
+                        onChange={num => setP(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginTop: '10px'}}
+                        id="standard-multiline-static"
+                        label="Введите числа разделленые пробелом"
+                        multiline
+                        rows={3}
+                        onChange={nums => setPNums(nums.target.value)}
+                        variant="outlined"
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        variant='outlined'
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
+                        type="number"
+                        defaultValue={r}
+                        onChange={num => setR(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginTop: '10px'}}
+                        id="standard-multiline-static"
+                        label="Введите числа разделленые пробелом"
+                        multiline
+                        variant="outlined"
+                        rows={3}
+                        onChange={nums => setRNums(nums.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        variant='outlined'
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[0] : ''}
+                        type="number"
+                        defaultValue={dispersionRegression}
+                        onChange={num => setDispersionRegression(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={getNewModelRegression} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     )
 }

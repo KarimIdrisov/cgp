@@ -1,7 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {VictoryAxis, VictoryBar, VictoryChart, VictoryLine, VictoryTheme} from "victory";
-import {Menu, MenuItem, Typography} from "@material-ui/core";
+import {VictoryAxis, VictoryBar, VictoryChart, VictoryLine} from "victory";
+import {Menu, MenuItem} from "@material-ui/core";
 import {useHistory} from "react-router-dom";
+import whiteEqual from "../models/whiteEqual";
+import whiteLaw from '../models/whiteLaw';
+import regression from "../models/regression";
 
 interface Model {
     type: string,
@@ -23,11 +26,8 @@ export default function NewModelGraphic(props: any) {
         const dataTmp = []
         // @ts-ignore
         const samples = +localStorage.getItem("samples")
-        console.log(localStorage.getItem("samples"))
         // @ts-ignore
         const fd = +localStorage.getItem('fd')
-
-        console.log(samples, fd)
         const k = Math.ceil(samples / 1000)
 
         if (props.id === 'impulse') {
@@ -119,6 +119,21 @@ export default function NewModelGraphic(props: any) {
             setData(dataTmp)
             setName(props.name)
         }
+        if (props.id === 'whiteEqual') {
+            const args = props.args?.split(':')
+            setData(whiteEqual(samples, fd, args[0], args[1]))
+            setName(props.name)
+        }
+        if (props.id === 'whiteLaw') {
+            const args = props.args?.split(':')
+            setData(whiteLaw(samples, fd, args[0], args[1]))
+            setName(props.name)
+        }
+        if (props.id === 'regression') {
+            const args = props.args?.split(':')
+            setData(regression(samples, fd, args[0], args[1], args[2], args[3], args[4]))
+            setName(props.name)
+        }
     }, [setData, setName]);
 
     if (arg !== props.args) {
@@ -172,8 +187,6 @@ export default function NewModelGraphic(props: any) {
 
     function deleteSignal() {
         setAnchorEl(null);
-        console.log(JSON.parse(localStorage.getItem("models") as string))
-
         if (window.location.href.includes('modeling')) {
             let models = JSON.parse(localStorage.getItem("models") as string)
             models = models.filter( (model: Model) => model.name !== props.name)

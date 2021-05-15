@@ -5,6 +5,10 @@ import HighchartsReact from 'highcharts-react-official';
 
 import {Menu, MenuItem} from "@material-ui/core";
 import {useHistory} from "react-router-dom";
+import whiteEqual from "../models/whiteEqual";
+import whiteLaw from "../models/whiteLaw";
+import regression from "../models/regression";
+import getTimes from "../utils/getTimes";
 
 export default function Oscillogram(props: any) {
     const [name, setName] = useState()
@@ -198,6 +202,24 @@ export default function Oscillogram(props: any) {
             }
             setData(dataTmp)
             setTimes(times)
+            setName(model.name)
+        }
+        if (model.type === 'whiteEqual') {
+            const args = model.args?.split(':')
+            setData(whiteEqual(samples, fd, args[0], args[1], true))
+            setTimes(getTimes(start, fd, samples))
+            setName(model.name)
+        }
+        if (model.type === 'whiteLaw') {
+            const args = model.args?.split(':')
+            setData(whiteLaw(samples, fd, args[0], args[1], true))
+            setTimes(getTimes(start, fd, samples))
+            setName(model.name)
+        }
+        if (model.type === 'regression') {
+            const args = model.args?.split(':')
+            setData(regression(samples, fd, args[0], args[1], args[2], args[3], args[4], true))
+            setTimes(getTimes(start, fd, samples))
             setName(model.name)
         }
     }, [setData, setName, setTimes]);
