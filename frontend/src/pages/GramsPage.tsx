@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
-import Layout from "../components/Layout";
 import axios from "axios";
-import Oscillogram from "../components/Oscillogram";
-import ModelOscillogram from "../components/ModelOscillogram";
+import clsx from "clsx";
+import {useAlert} from "react-alert";
+
 
 import Typography from "@material-ui/core/Typography";
 import {
@@ -15,29 +15,16 @@ import {
     MenuItem,
     TextField
 } from "@material-ui/core";
-import {useAlert} from "react-alert";
-import Minigram from "../components/Minigram";
 import TimelineIcon from "@material-ui/icons/Timeline";
 import ShowChartIcon from '@material-ui/icons/ShowChart';
-import ModelMinigram from "../components/ModelMinigram";
 import {ToggleButton, ToggleButtonGroup} from "@material-ui/lab";
-import clsx from "clsx";
+
+import Layout from "../components/Layout";
+import Oscillogram from "../components/Oscillogram";
+import ModelOscillogram from "../components/ModelOscillogram";
+
 
 const useStyles = makeStyles((theme) => ({
-    markdown: {
-        ...theme.typography.body2,
-        padding: theme.spacing(3, 0),
-    },
-    canvas: {
-        width: "200px",
-        height: "200px",
-    },
-    dialog: {
-        color: "black",
-    },
-    div: {
-        height: "400px"
-    },
     tools: {
         margin: 'auto',
         display: 'flex',
@@ -233,13 +220,6 @@ export default function GramsPage(props: any) {
                 </ToggleButtonGroup>
             </div>
             <Typography>Начало - {min?.toFixed() ? min?.toFixed() : 0}, Конец - {max?.toFixed() ? max?.toFixed() : localStorage.getItem('samples') as string}</Typography>
-            <div className={classes.abs}>
-                {(reqChannels.split(";")[0].includes('Model') && localStorage.getItem('models') !== null) ?
-                    (<ModelMinigram func={handleChange} start={data?.start} id={reqChannels.split(";")[0]}
-                                    fd={f}
-                                    samples={samples}/>)
-                    : (<Minigram func={handleChange} file={file} id={reqChannels.split(";")[0]}/>)}
-            </div>
             {(reqChannels.split(";").map((channel: string, number: number) => {
                 if (localStorage.getItem('models') !== null && channel.includes('Model')) {
                     return <ModelOscillogram start={data?.start} showMarkers={showMarkers} func={handleChange} min={min}

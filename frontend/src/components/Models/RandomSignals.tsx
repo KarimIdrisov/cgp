@@ -85,7 +85,6 @@ export default function RandomSignals(props: any) {
         }
         props.update()
     }
-
     function getNewModelWhiteLaw() {
         props.close()
         setOpenWhiteLaw(false)
@@ -125,7 +124,7 @@ export default function RandomSignals(props: any) {
         <>
             <MenuItem onClick={handleClick}>Случайные модели</MenuItem>
             <Menu
-                id="simple-menu"
+                id="randomModelsMenu"
                 anchorEl={anchorEl}
                 keepMounted
                 open={Boolean(anchorEl)}
@@ -137,7 +136,7 @@ export default function RandomSignals(props: any) {
             </Menu>
 
             <Dialog open={openWhiteEqual} onClose={handleClose} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Создание нового сигнала</DialogTitle>
+                <DialogTitle id="newRandomDialog">Создание нового сигнала</DialogTitle>
                 <DialogContent>
                     <Typography>Тип: {getType(current)}</Typography>
                     <Typography>Частота

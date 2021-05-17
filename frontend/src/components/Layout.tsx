@@ -32,6 +32,8 @@ export default function Layout(props: any) {
         setRedraw(Date.now())
     }
 
+
+
     if(window.location.href.includes('modeling') || window.location.href.includes("grams")) {
         const file = props.file
         return (

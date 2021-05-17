@@ -44,7 +44,6 @@ export default function Superposition(props: any) {
         setAnchorEl(null);
     };
 
-    const [checked, setChecked] = React.useState(true);
     const [superpositionType, setSuperpositionType] = React.useState('linear')
 
     const [current, setCurrent] = useState('linear')
@@ -71,13 +70,10 @@ export default function Superposition(props: any) {
 
     const handleChangeNames = (event: React.ChangeEvent<HTMLInputElement>) => {
         let tmp_names: any[] = []
-
         if (names !== undefined && names.split(';').length > 0) {
             tmp_names = names.split(';')
         }
-
         const name = event.target.id.toString()
-
         if (tmp_names.includes(name)) {
             tmp_names = tmp_names.filter(channel => channel !== name)
             setNames(tmp_names.join(';'))
@@ -90,10 +86,8 @@ export default function Superposition(props: any) {
     const handleChangeArguments = (event: React.ChangeEvent<HTMLInputElement>) => {
         let tmp_arguments: any[] = []
         let tmp_names: any[] = []
-
         const arg = event.target.value.toString()
         const name = event.target.id.toString()
-
         if (argsNames !== undefined && args !== undefined) {
             tmp_names = argsNames.split(';')
             tmp_arguments = args.split(';')
