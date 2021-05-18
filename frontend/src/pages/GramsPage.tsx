@@ -19,9 +19,10 @@ import TimelineIcon from "@material-ui/icons/Timeline";
 import ShowChartIcon from '@material-ui/icons/ShowChart';
 import {ToggleButton, ToggleButtonGroup} from "@material-ui/lab";
 
-import Layout from "../components/Layout";
+import Layout from "../components/Layout/Layout";
 import Oscillogram from "../components/Oscillogram";
 import ModelOscillogram from "../components/ModelOscillogram";
+import FileLayout from "../components/Layout/FileLayout";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -83,15 +84,6 @@ export default function GramsPage(props: any) {
     const [tempHeight, setTempHeight] = useState(200)
 
     const [anchorTools, setAnchorTools] = React.useState<null | HTMLElement>(null);
-
-    useEffect(() => {
-        async function getData() {
-            const result = await axios.get('http://localhost:3081/model-data/?id=' + file);
-            setData(result.data);
-        }
-
-        getData();
-    }, [setData]);
 
     const handleClickTools = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorTools(event.currentTarget);
@@ -194,7 +186,7 @@ export default function GramsPage(props: any) {
     }
 
     return (
-        <Layout file={file}>
+        <FileLayout file={file}>
             <Menu
                 id="tools"
                 anchorEl={anchorTools}
@@ -289,6 +281,6 @@ export default function GramsPage(props: any) {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Layout>
+        </FileLayout>
     );
 }

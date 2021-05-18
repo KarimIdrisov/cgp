@@ -1,12 +1,15 @@
 import React from 'react';
-import Layout from "../components/Layout";
 import MainContent from "../components/MainContent";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
 
 export default function HomePage() {
 
     return (
-        <Layout>
+        <>
+            <Header title="CGP - DSP"/>
             <MainContent/>
-        </Layout>
+            <Footer/>
+        </>
     );
 }

@@ -29,14 +29,11 @@ export default function MainContent() {
     function onDrop(file: any) {
         const data = new FormData()
         data.append('file', file[0])
-        axios.post("http://localhost:3081/upload", data, { // receive two parameter endpoint url ,form data
-        })
-            .then(res => {
-                console.log(file)
+        axios.post("http://localhost:3081/upload", data, {
+        }).then(res => {
                 if (res.statusText === "OK") {
                     localStorage.setItem("file", file[0].name)
-                    history.push("/modeling/" + file[0].name);
-                    localStorage.removeItem('models')
+                    history.push("/file");
                 }
             })
     }

@@ -187,8 +187,10 @@ app.get('/model-data', (req, res) => {
         channelsName = channelsName.slice(0, +channelsNumber);
 
         const signals = {}
+        const signalsXY = {}
         for (let i = 0; i < channelsNumber; i++) {
             signals[channelsName[i]] = []
+            signalsXY[channelsName[i]] = {}
         }
         for (let i = 12; i < lines.length - 1; i++) {
             for (let j = 0; j < channelsNumber; j++) {
@@ -201,6 +203,8 @@ app.get('/model-data', (req, res) => {
         const endTime = new Date(start.getTime() + (1 / samplingRate) * samplesNumber * 1000)
         // endTime.setMilliseconds(endTime.getMilliseconds() + (samplesNumber / samplingRate))
         let times = [0]
+        const resJson = []
+
         for (let i = 1; i < +samplesNumber; i++) {
             times.push(+times[i - 1] + +samplingRate)
         }
@@ -208,12 +212,12 @@ app.get('/model-data', (req, res) => {
             channelsNumber: channelsNumber,
             samplesNumber: samplesNumber,
             samplingRate: samplingRate,
-            time: samplingRate / 4,
             start: start,
             end: endTime,
             channelsName: channelsName,
-            min: times[0],
-            max: times[times.length - 1]
+            signals: signals,
+            time: 1 / samplingRate,
+            file: req.query.file
         });
     })
 });

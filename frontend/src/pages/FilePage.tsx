@@ -1,12 +1,12 @@
 import React from 'react';
-import Layout from "../components/Layout";
-import Dropzone from "../components/Dropzone"
+import FileLayout from "../components/Layout/FileLayout";
 
 export default function FilePage() {
+    const file = localStorage.getItem('file')
 
     return (
-        <Layout>
-            <Dropzone/>
-        </Layout>
-    );
+        <>
+            <FileLayout file={file}/>
+        </>
+    )
 }

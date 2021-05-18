@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
-import Layout from "../components/Layout";
+import Layout from "../components/Layout/Layout";
 import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({

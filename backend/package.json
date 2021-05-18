@@ -4,7 +4,9 @@
   "description": "example project react with nodejs",
   "main": "server.js",
   "scripts": {
-    "start": "node server.bundle.js",
+    "start": "nodemon server.js",
+    "client": "npm start --prefix ../frontend",
+    "all": "concurrently \"npm run start\" \"npm run client\"",
     "build": "webpack",
     "dev": "nodemon ./server.js localhost 3080"
   },
