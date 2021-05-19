@@ -52,18 +52,65 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
+interface Model {
+    type: string,
+    args: string,
+    name: string
+}
+
 export default function FileSidebar(props: any) {
     const classes = useStyles();
+    const history = useHistory();
+
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const newOscillogram = (event: React.MouseEvent<HTMLLIElement>) => {
+        // @ts-ignore
+        const channel = anchorEl.childNodes[anchorEl.childNodes.length - 1].id;
+        setAnchorEl(null);
+        if (!window.location.href.includes("grams")) {
+            history.push("/grams/" + channel);
+        } else {
+            const oldChannels = window.location.href.slice(28)
+            if (oldChannels.length === 0) {
+                history.push("/grams/" + channel)
+            }
+            if (!oldChannels.includes(channel)) {
+                history.push('/grams/' + oldChannels + ';' + channel);
+            }
+        }
+    }
+
+    function newOscillogramByGraph(channel: string) {
+        setAnchorEl(null);
+        if (!window.location.href.includes("grams")) {
+            history.push("/grams/" + channel);
+        } else {
+            const oldChannels = window.location.href.slice(28)
+            if (oldChannels.length === 0) {
+                history.push("/grams/" + channel)
+            }
+            if (!oldChannels.includes(channel)) {
+                history.push('/grams/' + oldChannels + ';' + channel);
+            }
+        }
+    }
 
     return (
         <div className={classes.root}>
+            <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+                <MenuItem onClick={newOscillogram}>Осцилограмма</MenuItem>
+            </Menu>
             <CssBaseline/>
             <Drawer className={classes.drawer} variant="permanent" classes={{paper: classes.drawerPaper}}
                     anchor="right">
                 {props.channels.map((channel: string, number: number) => (
                     <FileGraphic aria-controls="simple-menu" aria-haspopup="true" signal={props.signals[channel]}
-                                 source={props.sources[channel]} file={props.file} name={channel} key={number}
-                                 addOscillogram={props.addOscillogram}/>
+                             file={props.file} name={channel} key={number}/>
                 ))}
             </Drawer>
         </div>

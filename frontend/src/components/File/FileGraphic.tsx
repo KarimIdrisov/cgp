@@ -16,20 +16,15 @@ export default function FileGraphic(props: any) {
     };
 
     function addGraphic() {
-        props.addOscillogram(props.name)
         setAnchorEl(null);
     }
 
     function filter(data: any) {
         const maxPoints = 1000
-        let k = 0
-        if (props.source === 'Задержанный единичный импульс') {
-            return data
-        }
-        k = Math.ceil(data?.length / maxPoints)
-        return data.filter(
+        const k = Math.ceil(data?.length / maxPoints)
+        return data?.filter(
             (d: any, i: any) => ((i % k) === 0)
-        );
+        )
     }
 
     return (
@@ -37,8 +32,9 @@ export default function FileGraphic(props: any) {
             <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                 <MenuItem onClick={addGraphic}>Осцилограмма</MenuItem>
             </Menu>
-            <div aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
-                <Typography style={{textAlign: 'center'}}>{props.name}</Typography>
+            <div
+                aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+                <Typography style={{textAlign: 'center'}}></Typography>
                 <VictoryChart height={200}>
                     <VictoryLine data={filter(props.signal)} scale={{x: "time", y: "linear"}} style={{
                         data: {stroke: "black"},
