@@ -186,24 +186,32 @@ app.get('/model-data', (req, res) => {
         let channelsName = lines[11].split(';');
         channelsName = channelsName.slice(0, +channelsNumber);
 
-        const signals = {}
-        const signalsXY = {}
-        for (let i = 0; i < channelsNumber; i++) {
-            signals[channelsName[i]] = []
-            signalsXY[channelsName[i]] = {}
-        }
-        for (let i = 12; i < lines.length - 1; i++) {
-            for (let j = 0; j < channelsNumber; j++) {
-                signals[channelsName[j]].push(lines[i].split(' ')[j])
-            }
-        }
         let reverseStartDay = startDate.split("-")
         reverseStartDay = reverseStartDay[2] + '-' + reverseStartDay[1] + '-' + reverseStartDay[0]
         const start = new Date(reverseStartDay + "T" + startTime)
         const endTime = new Date(start.getTime() + (1 / samplingRate) * samplesNumber * 1000)
-        // endTime.setMilliseconds(endTime.getMilliseconds() + (samplesNumber / samplingRate))
         let times = [0]
         const resJson = []
+
+        const signals = {}
+        const signalsXY = {}
+        const channelsSource = {}
+        for (let i = 0; i < channelsNumber; i++) {
+            signals[channelsName[i]] = []
+            signalsXY[channelsName[i]] = []
+            channelsSource[channelsName[i]] = req.query.file
+        }
+        const XYstart = new Date(reverseStartDay + "T" + startTime)
+        for (let i = 12; i < lines.length - 1; i++) {
+            for (let j = 0; j < channelsNumber; j++) {
+                signals[channelsName[j]].push(lines[i].split(' ')[j])
+                signalsXY[channelsName[j]].push({
+                    'x': new Date(XYstart.getTime() + (i * (1 / samplingRate)) * 1000).getTime(),
+                    'y': +lines[i].split(' ')[j]
+                })
+            }
+        }
+
 
         for (let i = 1; i < +samplesNumber; i++) {
             times.push(+times[i - 1] + +samplingRate)
@@ -215,7 +223,9 @@ app.get('/model-data', (req, res) => {
             start: start,
             end: endTime,
             channelsName: channelsName,
+            channelsSource: channelsSource,
             signals: signals,
+            signalsXY: signalsXY,
             time: 1 / samplingRate,
             file: req.query.file
         });

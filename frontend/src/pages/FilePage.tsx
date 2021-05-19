@@ -6,7 +6,9 @@ export default function FilePage() {
 
     return (
         <>
-            <FileLayout file={file}/>
+            <FileLayout file={file}>
+
+            </FileLayout>
         </>
     )
 }

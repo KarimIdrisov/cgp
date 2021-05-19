@@ -4,7 +4,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import {Link, useHistory} from 'react-router-dom';
 import {
-    Button, Menu, MenuItem
+    Button, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, TextField
 } from "@material-ui/core";
 import clsx from "clsx";
 import dropData from '../utils/dropData';
@@ -78,6 +78,10 @@ export default function Header(props: any) {
     const history = useHistory();
 
     const [anchorFile, setAnchorFile] = React.useState<null | HTMLElement>(null);
+    const [openNewModelParams, setOpenNewModelParams] = React.useState(false);
+
+    const [f, setF] = React.useState(1)
+    const [samples, setSamples] = React.useState(1000)
 
     const handleClickFile = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorFile(event.currentTarget);
@@ -86,6 +90,20 @@ export default function Header(props: any) {
     const handleClose = () => {
         setAnchorFile(null)
     };
+
+    const handleCloseDialog = () => {
+        setOpenNewModelParams(false);
+    };
+
+    const handleClickModels = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setOpenNewModelParams(true)
+    };
+
+    function redirect() {
+        localStorage.setItem('samples', samples.toString())
+        localStorage.setItem('fd', f.toString())
+        history.push('/model')
+    }
 
     return (
         <>
@@ -105,6 +123,46 @@ export default function Header(props: any) {
                         className={classes.toolbarBtn}>
                     <Typography variant="h6">Файл</Typography>
                 </Button>
+                <Button color="inherit" aria-controls="file" aria-haspopup="true" onClick={handleClickModels}
+                        className={classes.toolbarBtn}>
+                    <Typography variant="h6">Моделирование</Typography>
+                </Button>
+                <Dialog open={openNewModelParams} onClose={handleClose} aria-labelledby="form-dialog-title">
+                    <DialogTitle id="form-dialog-title">Задание данных</DialogTitle>
+                    <DialogContent>
+                        <Typography>Файл не загружен</Typography>
+                        <TextField
+                            style={{marginRight: '10px'}}
+                            autoFocus
+                            margin="dense"
+                            id="from"
+                            variant='outlined'
+                            label="Частота дискретизации"
+                            type="number"
+                            defaultValue={f}
+                            onChange={num => setF(+num.target.value)}
+                        />
+                        <TextField
+                            style={{marginRight: '10px'}}
+                            autoFocus
+                            margin="dense"
+                            id="from"
+                            variant='outlined'
+                            label="Кол-во отсчетов"
+                            type="number"
+                            defaultValue={samples}
+                            onChange={num => setSamples(+num.target.value)}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseDialog} color="primary">
+                            Отмена
+                        </Button>
+                        <Button onClick={redirect} color="primary">
+                            ОК
+                        </Button>
+                    </DialogActions>
+                </Dialog>
                 {sections.map((section: Section, number) => (
                     <Link color="inherit" key={number} to={section.url}
                           className={classes.toolbarLink}>

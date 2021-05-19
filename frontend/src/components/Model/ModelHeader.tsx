@@ -96,7 +96,7 @@ const sections = [
     {title: 'Настройки', url: '#'},
 ];
 
-export default function FileHeader(props: any) {
+export default function ModelHeader(props: any) {
     const classes = useStyles();
     const history = useHistory();
 
