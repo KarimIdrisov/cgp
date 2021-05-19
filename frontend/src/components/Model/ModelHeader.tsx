@@ -17,6 +17,9 @@ import {
 import axios from "axios";
 import clsx from "clsx";
 import {Alert, AlertTitle} from "@material-ui/lab";
+import RandomSignals from "../Models/RandomSignals";
+import getType from "../../utils/getType";
+import getParamsNames from "../../utils/getParamsNames";
 import dropData from '../../utils/dropData';
 import Impulse from "../Models/Impulse";
 import Leap from "../Models/Leap";
@@ -28,6 +31,11 @@ import ExpEnvelope from "../Models/ExpEnvelope";
 import BalanceEnvelope from "../Models/BalanceEnvelope";
 import TonalEnvelope from "../Models/TonalEnvelope";
 import LinearModule from "../Models/LinearModule";
+
+interface Channel {
+    name: string,
+    type: string,
+}
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -88,7 +96,7 @@ const sections = [
     {title: 'Настройки', url: '#'},
 ];
 
-export default function FileHeader(props: any) {
+export default function ModelHeader(props: any) {
     const classes = useStyles();
     const history = useHistory();
 

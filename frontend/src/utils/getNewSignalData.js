@@ -64,7 +64,7 @@ export default function getNewSignalData(type, arg, samples, fd, time) {
     if (type === 'tonal_ogib') {
         const args = arg.split(':')
         data = tonal_ogib(samples, fd, args[0], args[1], args[2], args[3], args[4], true)
-        dataXY = sin(samples, fd, args[0], args[1], args[2], args[3], args[4])
+        dataXY = tonal_ogib(samples, fd, args[0], args[1], args[2], args[3], args[4])
         return [data, dataXY]
     }
     if (type === 'linear_module') {

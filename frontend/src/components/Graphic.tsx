@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import axios from "axios";
 import {VictoryAxis, VictoryChart, VictoryLine} from "victory";
 import {Menu, MenuItem, Typography} from "@material-ui/core";
+import abbreviateNumber from "../utils/abbreviateNumber";
 
 const Graphic = React.memo((props: any) => {
     const [signal, setSignal] = useState();
@@ -91,16 +92,5 @@ const Graphic = React.memo((props: any) => {
         </div>
     );
 })
-
-const SI_SYMBOL = ["", "k", "M", "G", "T", "P", "E"];
-
-function abbreviateNumber(number: number) {
-    const tier = Math.log10(Math.abs(number)) / 3 | 0;
-    if (tier === 0) return number;
-    const suffix = SI_SYMBOL[tier];
-    const scale = Math.pow(10, tier * 3);
-    const scaled = number / scale;
-    return scaled.toFixed(0) + suffix;
-}
 
 export default Graphic
