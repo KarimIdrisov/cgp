@@ -2,12 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {Theme, createStyles, makeStyles} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import axios from "axios";
-import {Menu, MenuItem} from "@material-ui/core";
-import {useHistory} from "react-router-dom";
-
-import NewModelGraphic from "../NewModelGraphic"
-import Graphic from "../Graphic";
 import FileGraphic from "./FileGraphic";
 
 const drawerWidth = 350;

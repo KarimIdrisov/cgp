@@ -1,6 +1,6 @@
 import frand from "../utils/frand";
 
-export default function whiteLaw(samples, fd, average, dispersion, notObject=false) {
+export default function whiteLaw(start, samples, fd, average, dispersion, notObject=false) {
     const dataTmp = []
 
     if (notObject) {
@@ -20,7 +20,7 @@ export default function whiteLaw(samples, fd, average, dispersion, notObject=fal
             }
             dataTmp.push({
                 'y': +average + Math.sqrt(+dispersion) * (+frand12 - 6),
-                'x': i
+                'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp

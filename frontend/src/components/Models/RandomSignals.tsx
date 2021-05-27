@@ -70,52 +70,16 @@ export default function RandomSignals(props: any) {
     }
 
     function getNewModelWhiteEqual() {
-        props.close()
         setOpenWhiteEqual(false)
-        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
-        const signal = [{
-            type: current,
-            args: `${startInterval}:${endInterval}`,
-            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
-        }]
-        if (oldSignals !== null) {
-            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
-        } else {
-            localStorage.setItem('models', JSON.stringify(signal))
-        }
-        props.update()
+        props.addNewSignal(current, `${startInterval}:${endInterval}`)
     }
     function getNewModelWhiteLaw() {
-        props.close()
         setOpenWhiteLaw(false)
-        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
-        const signal = [{
-            type: current,
-            args: `${averageLaw}:${dispersionLaw}`,
-            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
-        }]
-        if (oldSignals !== null) {
-            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
-        } else {
-            localStorage.setItem('models', JSON.stringify(signal))
-        }
-        props.update()
+        props.addNewSignal(current, `${averageLaw}:${dispersionLaw}`)
     }
     function getNewModelRegression() {
-        props.close()
         setOpenRegression(false)
-        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
-        const signal = [{
-            type: current,
-            args: `${dispersionRegression}:${p}:${r}:${pNums}:${rNums}`,
-            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
-        }]
-        if (oldSignals !== null) {
-            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
-        } else {
-            localStorage.setItem('models', JSON.stringify(signal))
-        }
-        props.update()
+        props.addNewSignal(current, `${dispersionRegression}:${p}:${r}:${pNums}:${rNums}`)
     }
 
     const [current, setCurrent] = useState('')

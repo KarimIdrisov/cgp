@@ -1,4 +1,4 @@
-export default function jump(samples, fd,  argument, notObject=false) {
+export default function jump(start, samples, fd,  argument, notObject=false) {
     const dataTmp = []
     if (notObject) {
         for (let i = 0; i < samples; i++) {
@@ -9,7 +9,7 @@ export default function jump(samples, fd,  argument, notObject=false) {
         for (let i = 0; i < samples; i++) {
             dataTmp.push({
                 'y': i >= +argument ? 1 : 0,
-                'x': i
+                'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp

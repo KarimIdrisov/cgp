@@ -50,22 +50,19 @@ export default function Superposition(props: any) {
 
     function getSuperPositionModel() {
         setOpenSuperPositions(false)
-        props.close()
-        const oldSignals = JSON.parse(localStorage.getItem('models') as string)
-        const signal = [{
-            type: current,
-            args: `${first}:${names}:${argsNames}:${args}`,
-            name: `Model_${oldSignals === null ? 0 : oldSignals.length}_0`
-        }]
-        if (oldSignals !== null) {
-            localStorage.setItem('models', JSON.stringify(signal.concat(oldSignals)))
-        } else {
-            localStorage.setItem('models', JSON.stringify(signal))
+        let tmpNames = names
+        let tmpArgs = args
+        if (names !== undefined && names[0] === ';') {
+            tmpNames = names.slice(1)
         }
+        if (args !== undefined && args[0] === ';') {
+            tmpArgs = args.slice(1)
+        }
+        props.addNewSignal(current, `${tmpNames}:${first}:${tmpArgs}`)
         setNames('')
         setArgs('')
         setArgsNames('')
-        props.update()
+        props.close()
     }
 
     const handleChangeNames = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,7 +147,7 @@ export default function Superposition(props: any) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {props.channelsFile ? (props.channelsFile.map((channel: string) => (
+                            {props.channels.map((channel: string) => (
                                 <TableRow key={channel}>
                                     <TableCell component="th" scope="row">
                                         {channel}
@@ -175,33 +172,7 @@ export default function Superposition(props: any) {
                                         />
                                     </TableCell>
                                 </TableRow>
-                            ))) : (<></>)}
-                            {JSON.parse(localStorage.getItem('models') as string) ? (JSON.parse(localStorage.getItem('models') as string).map((channel: Channel) => (
-                                <TableRow key={channel.name}>
-                                    <TableCell component="th" scope="row">
-                                        {channel.name}
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Checkbox
-                                            id={channel.name}
-                                            color="primary"
-                                            inputProps={{'aria-label': 'secondary checkbox'}}
-                                            onChange={handleChangeNames}
-                                        />
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <TextField
-                                            id={channel.name}
-                                            style={{marginRight: '10px'}}
-                                            autoFocus
-                                            margin="dense"
-                                            variant='outlined'
-                                            type="number"
-                                            onChange={handleChangeArguments}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))) : (<></>)}
+                            ))}
                         </TableBody>
                     </Table>
                 </DialogContent>

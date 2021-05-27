@@ -1,6 +1,6 @@
 import frand from "../utils/frand";
 
-export default function whiteEqual(samples, fd, startInterval, endInterval, notObject=false) {
+export default function whiteEqual(start, samples, fd, startInterval, endInterval, notObject=false) {
     const dataTmp = []
     if (notObject) {
         for (let i = 0; i < samples; i++) {
@@ -11,7 +11,7 @@ export default function whiteEqual(samples, fd, startInterval, endInterval, notO
         for (let i = 0; i < samples; i++) {
             dataTmp.push({
                 'y': +startInterval + (+endInterval - +startInterval) * frand(),
-                'x': i
+                'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp

@@ -1,4 +1,4 @@
-export default function pila(samples, fd, period, notObject=false) {
+export default function pila(start, samples, fd, period, notObject=false) {
     const dataTmp = []
     if (notObject) {
         for (let i = 0; i < samples; i++) {
@@ -9,7 +9,7 @@ export default function pila(samples, fd, period, notObject=false) {
         for (let i = 0; i < samples; i++) {
             dataTmp.push({
                 'y': (i % +period) / 2,
-                'x': i
+                'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp

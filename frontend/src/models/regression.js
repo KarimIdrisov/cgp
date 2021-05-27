@@ -1,6 +1,6 @@
 import frand from "../utils/frand";
 
-export default function regression(samples, fd, dispersion, p, r, pNums, rNums, notObject = false) {
+export default function regression(start, samples, fd, dispersion, p, r, pNums, rNums, notObject = false) {
     const dataTmp = []
     pNums = pNums.split(' ')
     rNums = rNums.split(' ')
@@ -14,7 +14,7 @@ export default function regression(samples, fd, dispersion, p, r, pNums, rNums, 
         for (let i = 0; i < samples; i++) {
             dataTmp.push({
                 'y': getARMA(samples, dispersion, p, r, pNums, rNums)[0],
-                'x': i
+                'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp

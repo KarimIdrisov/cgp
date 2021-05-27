@@ -3,16 +3,14 @@ import {makeStyles} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import FileHeader from '../File/FileHeader';
-import Footer from '../Footer';
-import Sidebar from "../Sidebar";
 import axios from "axios";
 import {CircularProgress} from "@material-ui/core";
-import {Simulate} from "react-dom/test-utils";
 import FileSidebar from "../File/FileSidebar";
 import FileOscillogram from "../File/FileOscillogram";
 import OscillogramsTools from "../File/OscillogramsTools";
 import getNewSignalData from "../../utils/getNewSignalData";
 import getType from "../../utils/getType";
+import Slider from "../Slider";
 
 const useStyles = makeStyles((theme) => ({
     mainGrid: {
@@ -28,7 +26,9 @@ const useStyles = makeStyles((theme) => ({
     },
     container: {
         maxWidth: "1050px",
-        marginLeft: "10px"
+        marginLeft: "10px",
+        display: 'flex',
+        flexDirection: 'column'
     },
     progress: {
         display: 'flex',
@@ -43,8 +43,8 @@ interface Data {
     channelsNumber: number,
     samplesNumber: number,
     samplingRate: number,
-    start: string,
-    end: string,
+    start: Date,
+    end: Date,
     channelsName: Array<string>,
     channelsSource: any,
     signals: any,
@@ -56,8 +56,6 @@ interface Data {
 export default function FileLayout(props: any) {
     const forceUpdate = useForceUpdate();
     const classes = useStyles();
-    const [samples, setSamples] = React.useState()
-    const [fd, setFd] = React.useState()
     const [data, setData] = React.useState<Data>()
     const [modelCount, setModelCount] = React.useState<number>(0)
 
@@ -65,6 +63,7 @@ export default function FileLayout(props: any) {
     const [min, setMin] = React.useState(0)
     const [max, setMax] = React.useState(data?.samplesNumber)
     const [spline, setSpline] = React.useState(false)
+    const [charts, setCharts] = React.useState([])
 
     function useForceUpdate() {
         const [value, setValue] = useState(0); // integer state
@@ -79,7 +78,7 @@ export default function FileLayout(props: any) {
     useEffect(() => {
         async function getData() {
             setLoading(true)
-            const result = await axios.get('http://localhost:3081/model-data/?id=' + props.file);
+            const result = await axios.get('http://localhost:3081/get-file/?id=' + props.file);
             setData(result.data)
             setMax(result.data.samplesNumber)
             setLoading(false)
@@ -104,7 +103,22 @@ export default function FileLayout(props: any) {
     }
 
     function addNewSignal(type: string, args: string) {
-        const res = getNewSignalData(type, args, data?.samplesNumber, data?.samplingRate, data?.time)
+        let res = []
+        if (type === 'linear' || type === 'multiplicative') {
+            const names = args.split(':')[0]
+            const channels = []
+            for (let key in data?.signals) {
+                if (names.includes(key)) {
+                    channels.push(data?.signals[key])
+                }
+            }
+
+            // @ts-ignore
+            res = getNewSignalData(channels, type, args, data?.samplesNumber, data?.samplingRate, new Date(data?.start))
+        } else {
+            // @ts-ignore
+            res = getNewSignalData([], type, args, data?.samplesNumber, data?.samplingRate, new Date(data?.start))
+        }
         if (data !== undefined) {
             data?.channelsName.push(`Model_${modelCount}`)
 
@@ -147,6 +161,101 @@ export default function FileLayout(props: any) {
         setMax(data?.samplesNumber)
     }
 
+    function update(names: string) {
+        const savedChannels = names.slice(1).split(';')
+        if (data !== undefined) {
+            const savedSignals: any[] = []
+            savedChannels.forEach(channel => {
+                if (channel in data?.signals) {
+                    savedSignals.push(data?.signals[channel])
+                }
+            })
+            const newData = {
+                channelsNumber: savedChannels.length,
+                samplesNumber: data?.samplesNumber,
+                samplingRate: data?.samplingRate,
+                start: data?.start,
+                end: data?.end,
+                channelsName: savedChannels,
+                signals: savedSignals,
+                file: data?.file
+            }
+            axios.post("http://localhost:3081/updateFile", newData).then(r => console.log(r))
+        }
+    }
+
+    function updateCharts(ref: any) {
+        const tmp = charts
+        // @ts-ignore
+        tmp.push(ref)
+        setCharts(tmp)
+    }
+
+    function syncHandler(e: any) {
+        const chartsArr = charts;
+        // @ts-ignore
+        for (let i = 0; i < chartsArr.length; i++) {
+            // @ts-ignore
+            const chart = chartsArr[i];
+
+            // @ts-ignore
+            if (!chart.options.axisX) chart.options.axisX = {};
+
+            // @ts-ignore
+            if (!chart.options.axisY) chart.options.axisY = {};
+
+            if (e.trigger === "reset") {
+                // @ts-ignore
+                chart.options.axisX.viewportMinimum = chart.options.axisX.viewportMaximum = null;
+                // @ts-ignore
+                chart.options.axisY.viewportMinimum = chart.options.axisY.viewportMaximum = null;
+
+                // @ts-ignore
+                chart.render();
+            } else if (chart !== e.chart) {
+                // @ts-ignore
+                chart.options.axisX.viewportMinimum = e.axisX[0].viewportMinimum;
+                // @ts-ignore
+                chart.options.axisX.viewportMaximum = e.axisX[0].viewportMaximum;
+
+                // @ts-ignore
+                chart.options.axisY.viewportMinimum = e.axisY[0].viewportMinimum;
+                // @ts-ignore
+                chart.options.axisY.viewportMaximum = e.axisY[0].viewportMaximum;
+
+                // @ts-ignore
+                chart.render();
+            }
+        }
+    }
+
+    function deleteModeling() {
+        // TODO
+    }
+
+    function saveNew(names: string, file: string) {
+        const savedChannels = names.slice(1).split(';')
+        if (data !== undefined) {
+            const savedSignals: any[] = []
+            savedChannels.forEach(channel => {
+                if (channel in data?.signals) {
+                    savedSignals.push(data?.signals[channel])
+                }
+            })
+            const newData = {
+                channelsNumber: savedChannels.length,
+                samplesNumber: data?.samplesNumber,
+                samplingRate: data?.samplingRate,
+                start: data?.start,
+                end: data?.end,
+                channelsName: savedChannels.join(';'),
+                signals: savedSignals,
+                file: file
+            }
+            axios.post("http://localhost:3081/updateFile", newData).then(r => console.log(r))
+        }
+    }
+
     if (loading) {
         return (
             <div className={classes.progress}>
@@ -160,22 +269,35 @@ export default function FileLayout(props: any) {
             <Container className={classes.container}>
                 <FileHeader title="CGP - DSP" samples={data?.samplesNumber} fd={data?.samplingRate}
                             channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
-                            startTime={data?.start} endTime={data?.end} sources={data?.channelsSource}
+                            startTime={data?.start} endTime={data?.end} sources={data?.channelsSource} update={update}
+                            delete={deleteModeling} addOscillogram={newOscillogram} saveNew={saveNew}
                 />
                 {oscillograms.length > 0 ? (
                     <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}
                                        setFragment={setFragment} dropFragment={dropFragment}/>) : <></>}
                 <div style={{display: 'flex', flexDirection: 'column'}}>
                     {oscillograms.length > 0 ? (
+                                <>
+                                    <Slider signal={data?.signalsXY[oscillograms[0]]}
+                                                     source={data?.channelsSource[oscillograms[0]]}
+                                                     sync={syncHandler}
+                                                     name={oscillograms[0]} height={100} min={min} max={max}
+                                    />
+                                </>) : (<></>)}
+                    {oscillograms.length > 0 ? (
                         oscillograms.map((channel, number) => {
                             return (
                                 <>
-                                    <FileOscillogram signal={data?.signalsXY[channel]}
-                                                     name={channel} height={height} min={min} max={max}/>
+                                    <FileOscillogram signal={data?.signalsXY[channel]} key={number}
+                                                     source={data?.channelsSource[channel]}
+                                                     sync={syncHandler} updateRef={updateCharts}
+                                                     name={channel} height={height} min={min} max={max}
+                                    />
                                 </>)
                         })
                     ) : (<></>)}
                 </div>
+
                 <FileSidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
                              channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
                              signals={data?.signals} signalsXY={data?.signalsXY} min={min} max={max}/>

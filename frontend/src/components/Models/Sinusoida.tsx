@@ -29,7 +29,7 @@ export default function Sinusoida(props: any) {
 
     useEffect(() => {
         if (props.samples < 100000) {
-            setCircle(35 / (Math.pow(10, (props.samples.toString().split('').length - 1))))
+            setCircle(0.035)
         } else {
             setCircle(35 / (Math.pow(10, (props.samples.toString().split('').length - 2))))
         }

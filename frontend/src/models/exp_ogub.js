@@ -1,4 +1,4 @@
-export default function exp_ogub(samples, fd, amplitude, ogib, nesuch, startPhase, notObject=false) {
+export default function exp_ogub(start, samples, fd, amplitude, ogib, nesuch, startPhase, notObject=false) {
     const dataTmp = []
     if (notObject) {
         for (let i = 0; i < samples; i++) {
@@ -9,7 +9,7 @@ export default function exp_ogub(samples, fd, amplitude, ogib, nesuch, startPhas
         for (let i = 0; i < samples; i++) {
             dataTmp.push({
                 'y': amplitude * Math.exp(-i / +ogib) * Math.cos(2 * Math.PI * +nesuch * i + +startPhase),
-                'x': i
+                'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp

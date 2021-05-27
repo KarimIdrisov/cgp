@@ -37,7 +37,7 @@ export default function TonalEnvelope(props: any) {
         } else {
             setGlubina(0.5)
             setOgib((props.fd / 2) / (props.samples / 10))
-            setNesuch((props.fd / 2) / 1000 / (props.samples / 100000))
+            setNesuch((props.fd / 40) / 1000 / (props.samples / 100000))
         }
     }, [])
 

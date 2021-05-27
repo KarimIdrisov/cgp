@@ -25,8 +25,8 @@ export default function LinearModule(props: any) {
 
     const [ampl, setAmpl] = useState(1)
     const [startPhase, setStartPhase] = useState(3.14)
-    const [ogib, setOgib] = useState((props.fd / 2) / (props.samples / 100))
-    const [nesuch, setNesuch] = useState((props.fd / 4) / (props.samples / 10))
+    const [ogib, setOgib] = useState((props.fd / 2) / (props.samples / 10))
+    const [nesuch, setNesuch] = useState((props.fd / 2) / (props.samples / 100))
 
     function handleClick(event: React.MouseEvent<HTMLLIElement>) {
         //@ts-ignore

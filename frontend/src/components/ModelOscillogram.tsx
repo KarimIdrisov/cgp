@@ -224,16 +224,16 @@ export default function Oscillogram(props: any) {
             setTimes(getTimes(start, fd, samples))
             setName(model.name)
         }
-        if (model.type === 'linear') {
-            const args = model.args?.split(':')
-            setData(linearSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
-            setName(model.name)
-        }
-        if (model.type === 'multiplicative') {
-            const args = model.args?.split(':')
-            setData(multiplicativeSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
-            setName(model.name)
-        }
+        // if (model.type === 'linear') {
+        //     const args = model.args?.split(':')
+        //     setData(linearSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
+        //     setName(model.name)
+        // }
+        // if (model.type === 'multiplicative') {
+        //     const args = model.args?.split(':')
+        //     setData(multiplicativeSuperposition(samples, fd, args[0], args[1], args[2], args[3], true))
+        //     setName(model.name)
+        // }
     }, [setData, setName, setTimes]);
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

@@ -26,16 +26,15 @@ const useStyles = makeStyles((theme) => ({
         overflowX: 'auto',
     },
     toolbarLink: {
-        padding: theme.spacing(1),
+        padding: theme.spacing(0.5),
         flexShrink: 0,
-        fontSize: "1.3rem",
+        fontSize: "1.2rem",
         color: "#333",
         textDecoration: "none",
-        margin: "auto",
     },
     toolbarBtn: {
         height: "30px",
-        width: "100px",
+        width: "80px",
         textTransform: "none",
     },
     Link: {
@@ -114,62 +113,65 @@ export default function Header(props: any) {
                         {props.title}
                     </Typography>
                 </Link>
+
+                <Toolbar component="nav" variant="dense" className={clsx(classes.toolbarSecondary, {
+                    [classes.width1300px]: !(window.location.href.includes("mod") || window.location.href.includes("gram")),
+                    [classes.width1000px]: (window.location.href.includes("mod") || window.location.href.includes("gram"))
+                })}>
+                    <Button color="inherit" aria-controls="file" aria-haspopup="true" onClick={handleClickFile}
+                            className={classes.toolbarBtn}>
+                        <Typography variant="h6">Файл</Typography>
+                    </Button>
+                    <Button color="inherit" aria-controls="file" aria-haspopup="true" onClick={handleClickModels}
+                            className={classes.toolbarBtn}>
+                        <Typography variant="h6">Моделирование</Typography>
+                    </Button>
+                    {sections.map((section: Section, number) => (
+                        <Link color="inherit" key={number} to={section.url}
+                              className={classes.toolbarLink}>
+                            <Typography variant="h6">{section.title}</Typography>
+                        </Link>
+                    ))}
+                </Toolbar>
             </Toolbar>
-            <Toolbar component="nav" variant="dense" className={clsx(classes.toolbarSecondary, {
-                [classes.width1300px]: !(window.location.href.includes("mod") || window.location.href.includes("gram")),
-                [classes.width1000px]: (window.location.href.includes("mod") || window.location.href.includes("gram"))
-            })}>
-                <Button color="inherit" aria-controls="file" aria-haspopup="true" onClick={handleClickFile}
-                        className={classes.toolbarBtn}>
-                    <Typography variant="h6">Файл</Typography>
-                </Button>
-                <Button color="inherit" aria-controls="file" aria-haspopup="true" onClick={handleClickModels}
-                        className={classes.toolbarBtn}>
-                    <Typography variant="h6">Моделирование</Typography>
-                </Button>
-                <Dialog open={openNewModelParams} onClose={handleClose} aria-labelledby="form-dialog-title">
-                    <DialogTitle id="form-dialog-title">Задание данных</DialogTitle>
-                    <DialogContent>
-                        <Typography>Файл не загружен</Typography>
-                        <TextField
-                            style={{marginRight: '10px'}}
-                            autoFocus
-                            margin="dense"
-                            id="from"
-                            variant='outlined'
-                            label="Частота дискретизации"
-                            type="number"
-                            defaultValue={f}
-                            onChange={num => setF(+num.target.value)}
-                        />
-                        <TextField
-                            style={{marginRight: '10px'}}
-                            autoFocus
-                            margin="dense"
-                            id="from"
-                            variant='outlined'
-                            label="Кол-во отсчетов"
-                            type="number"
-                            defaultValue={samples}
-                            onChange={num => setSamples(+num.target.value)}
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseDialog} color="primary">
-                            Отмена
-                        </Button>
-                        <Button onClick={redirect} color="primary">
-                            ОК
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-                {sections.map((section: Section, number) => (
-                    <Link color="inherit" key={number} to={section.url}
-                          className={classes.toolbarLink}>
-                        <Typography variant="h6">{section.title}</Typography>
-                    </Link>
-                ))}
-            </Toolbar>
+
+            <Dialog open={openNewModelParams} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Задание данных</DialogTitle>
+                <DialogContent>
+                    <Typography>Файл не загружен</Typography>
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        variant='outlined'
+                        label="Частота дискретизации"
+                        type="number"
+                        defaultValue={f}
+                        onChange={num => setF(+num.target.value)}
+                    />
+                    <TextField
+                        style={{marginRight: '10px'}}
+                        autoFocus
+                        margin="dense"
+                        id="from"
+                        variant='outlined'
+                        label="Кол-во отсчетов"
+                        type="number"
+                        defaultValue={samples}
+                        onChange={num => setSamples(+num.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Отмена
+                    </Button>
+                    <Button onClick={redirect} color="primary">
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <Menu
                 id="file"
                 anchorEl={anchorFile}

@@ -109,7 +109,7 @@ export default function OscillogramsTools(props: any) {
     }
 
     return (
-        <>
+        <div style={{marginTop: '5px'}}>
             <Menu
                 id="tools"
                 anchorEl={anchorTools}
@@ -191,6 +191,6 @@ export default function OscillogramsTools(props: any) {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </>
+        </div>
     );
 }

@@ -136,21 +136,23 @@ export default function NewModelGraphic(props: any) {
             setData(regression(samples, fd, args[0], args[1], args[2], args[3], args[4]))
             setName(props.name)
         }
-        if (props.id === 'linear') {
-            const args = props.args?.split(':')
-            setData(linearSuperposition(samples, fd, args[0], args[1], args[2], args[3]))
-            setName(props.name)
-        }
-        if (props.id === 'multiplicative') {
-            const args = props.args?.split(':')
-            setData(multiplicativeSuperposition(samples, fd, args[0], args[1], args[2], args[3]))
-            setName(props.name)
-        }
+        // if (props.id === 'linear') {
+        //     const args = props.args?.split(':')
+        //     setData(linearSuperposition(samples, fd, args[0], args[1], args[2], args[3]))
+        //     setName(props.name)
+        // }
+        // if (props.id === 'multiplicative') {
+        //     const args = props.args?.split(':')
+        //     setData(multiplicativeSuperposition(samples, fd, args[0], args[1], args[2], args[3]))
+        //     setName(props.name)
+        // }
     }, [setData, setName]);
 
     if (arg !== props.args) {
         setArg(props.args)
     }
+
+
 
     function filter(data: any) {
         const maxPoints = 1000

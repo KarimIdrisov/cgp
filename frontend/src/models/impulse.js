@@ -1,4 +1,4 @@
-export default function impulse(samples, fd,  argument, notObject=false) {
+export default function impulse(start, samples, fd,  argument, notObject=false) {
     const dataTmp = []
     localStorage.setItem('impulse', argument)
     if (notObject) {
@@ -10,7 +10,7 @@ export default function impulse(samples, fd,  argument, notObject=false) {
         for (let i = 0; i < samples; i++) {
             dataTmp.push({
                 'y': i === +argument ? 1 : 0,
-                'x': i
+                'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp
