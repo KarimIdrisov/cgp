@@ -9,9 +9,10 @@ const CanvasJSStockChart = CanvasJSReact.CanvasJSStockChart;
 export default function Slider(props: any) {
 
     const options = {
-        height: 300,
+        height: props.height,
         animationEnabled: true,
         exportEnabled: true,
+        rangeChanged: props.sync,
         charts: [{
             axisX: {
                 crosshair: {
@@ -27,11 +28,12 @@ export default function Slider(props: any) {
             },
             data: [{
                 type: "spline",
-                dataPoints: props.signal
+                dataPoints: props.signal,
+                xValueType: "dateTime",
             }]
         }],
         navigator: {
-          height: 100
+          height: 52
         },
         rangeSelector: {
             inputFields: {
@@ -61,7 +63,7 @@ export default function Slider(props: any) {
     return (
         <div style={{margin: '5px', height: props.height}}>
             <div>
-                <CanvasJSStockChart options={options}
+                <CanvasJSStockChart options={options} onRef={(ref: any) => props.updateRef(ref)}
                 />
             </div>
         </div>

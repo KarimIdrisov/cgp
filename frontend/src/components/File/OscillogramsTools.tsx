@@ -82,19 +82,11 @@ export default function OscillogramsTools(props: any) {
 
 
     function turnInterpolation() {
-        if (!showMarkers) {
-            setShow(true)
-        } else {
-            setShow(false)
-        }
+        props.turnInterpolation()
     }
 
     function turnSpline() {
-        if (!showSpline) {
-            setShowSpline(true)
-        } else {
-            setShowSpline(false)
-        }
+        props.turnSpline()
     }
 
     function handleChangeSize() {
@@ -126,10 +118,10 @@ export default function OscillogramsTools(props: any) {
                     <Typography variant="h6">Инструменты</Typography>
                 </Button>
                 <ToggleButtonGroup>
-                    <ToggleButton className={clsx({[classes.active]: showMarkers})} onClick={turnInterpolation}>
+                    <ToggleButton className={clsx({[classes.active]: props.markers})} onClick={turnInterpolation}>
                         <TimelineIcon/>
                     </ToggleButton>
-                    <ToggleButton className={clsx({[classes.active]: showSpline})} onClick={turnSpline}>
+                    <ToggleButton className={clsx({[classes.active]: props.spline})} onClick={turnSpline}>
                         <ShowChartIcon/>
                     </ToggleButton>
                 </ToggleButtonGroup>

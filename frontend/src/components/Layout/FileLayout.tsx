@@ -63,6 +63,7 @@ export default function FileLayout(props: any) {
     const [min, setMin] = React.useState(0)
     const [max, setMax] = React.useState(data?.samplesNumber)
     const [spline, setSpline] = React.useState(false)
+    const [markers, setMarkers] = React.useState(false)
     const [charts, setCharts] = React.useState([])
 
     function useForceUpdate() {
@@ -197,7 +198,6 @@ export default function FileLayout(props: any) {
         for (let i = 0; i < chartsArr.length; i++) {
             // @ts-ignore
             const chart = chartsArr[i];
-
             // @ts-ignore
             if (!chart.options.axisX) chart.options.axisX = {};
 
@@ -213,24 +213,65 @@ export default function FileLayout(props: any) {
                 // @ts-ignore
                 chart.render();
             } else if (chart !== e.chart) {
-                // @ts-ignore
-                chart.options.axisX.viewportMinimum = e.axisX[0].viewportMinimum;
-                // @ts-ignore
-                chart.options.axisX.viewportMaximum = e.axisX[0].viewportMaximum;
+                if (e.axisX === undefined) {
+                    // @ts-ignore
+                    chart.options.axisX.viewportMinimum = e.minimum;
+                    // @ts-ignore
+                    chart.options.axisX.viewportMaximum = e.maximum;
 
-                // @ts-ignore
-                chart.options.axisY.viewportMinimum = e.axisY[0].viewportMinimum;
-                // @ts-ignore
-                chart.options.axisY.viewportMaximum = e.axisY[0].viewportMaximum;
+                    // @ts-ignore
+                    chart.render();
+                } else {
+                    // @ts-ignore
+                    chart.options.axisX.viewportMinimum = e.axisX[0].viewportMinimum;
+                    // @ts-ignore
+                    chart.options.axisX.viewportMaximum = e.axisX[0].viewportMaximum;
 
-                // @ts-ignore
-                chart.render();
+                    // @ts-ignore
+                    chart.options.axisY.viewportMinimum = e.axisY[0].viewportMinimum;
+                    // @ts-ignore
+                    chart.options.axisY.viewportMaximum = e.axisY[0].viewportMaximum;
+
+                    // @ts-ignore
+                    chart.render();
+                }
             }
         }
     }
 
-    function deleteModeling() {
-        // TODO
+    function deleteOscillogram(name: string) {
+        const tmp = oscillograms.filter(channel => channel !== name)
+        setOscillograms(tmp)
+        forceUpdate()
+    }
+
+    function deleteSignal(name: string) {
+        if (data !== undefined) {
+
+            const tmpSources = data?.channelsSource
+            delete tmpSources[name]
+
+            const tmpChannels = data?.signals
+            delete tmpChannels[name]
+
+            const tmpChannelsXY = data?.signalsXY
+            delete tmpChannelsXY[name]
+
+            setData({
+                channelsNumber: +data?.channelsNumber - 1,
+                samplesNumber: data?.samplesNumber,
+                samplingRate: data?.samplingRate,
+                start: data?.start,
+                end: data?.end,
+                channelsName: data?.channelsName.filter( channel => channel !== name),
+                channelsSource: tmpSources,
+                signals: tmpChannels,
+                signalsXY: tmpChannelsXY,
+                time: data?.time,
+                file: data?.file
+            })
+            forceUpdate()
+        }
     }
 
     function saveNew(names: string, file: string) {
@@ -256,6 +297,14 @@ export default function FileLayout(props: any) {
         }
     }
 
+    function turnInterpolation() {
+        setMarkers(!markers)
+    }
+
+    function turnSpline() {
+        setSpline(!spline)
+    }
+
     if (loading) {
         return (
             <div className={classes.progress}>
@@ -270,20 +319,21 @@ export default function FileLayout(props: any) {
                 <FileHeader title="CGP - DSP" samples={data?.samplesNumber} fd={data?.samplingRate}
                             channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
                             startTime={data?.start} endTime={data?.end} sources={data?.channelsSource} update={update}
-                            delete={deleteModeling} addOscillogram={newOscillogram} saveNew={saveNew}
+                            addOscillogram={newOscillogram} saveNew={saveNew}
                 />
                 {oscillograms.length > 0 ? (
                     <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}
-                                       setFragment={setFragment} dropFragment={dropFragment}/>) : <></>}
+                                       setFragment={setFragment} dropFragment={dropFragment}
+                                       turnInterpolation={turnInterpolation} turnSpline={turnSpline}/>) : <></>}
                 <div style={{display: 'flex', flexDirection: 'column'}}>
                     {oscillograms.length > 0 ? (
-                                <>
-                                    <Slider signal={data?.signalsXY[oscillograms[0]]}
-                                                     source={data?.channelsSource[oscillograms[0]]}
-                                                     sync={syncHandler}
-                                                     name={oscillograms[0]} height={100} min={min} max={max}
-                                    />
-                                </>) : (<></>)}
+                        <>
+                            <Slider signal={data?.signalsXY[oscillograms[0]]}
+                                    source={data?.channelsSource[oscillograms[0]]}
+                                    sync={syncHandler} updateRef={updateCharts}
+                                    name={oscillograms[0]} height={98} min={min} max={max}
+                            />
+                        </>) : (<></>)}
                     {oscillograms.length > 0 ? (
                         oscillograms.map((channel, number) => {
                             return (
@@ -292,6 +342,8 @@ export default function FileLayout(props: any) {
                                                      source={data?.channelsSource[channel]}
                                                      sync={syncHandler} updateRef={updateCharts}
                                                      name={channel} height={height} min={min} max={max}
+                                                     deleteOscillogram={deleteOscillogram}
+                                                     spline={spline} markers={markers}
                                     />
                                 </>)
                         })
@@ -300,7 +352,8 @@ export default function FileLayout(props: any) {
 
                 <FileSidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
                              channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
-                             signals={data?.signals} signalsXY={data?.signalsXY} min={min} max={max}/>
+                             signals={data?.signals} signalsXY={data?.signalsXY} min={min} max={max}
+                             deleteSignal={deleteSignal}/>
             </Container>
         </React.Fragment>
     )

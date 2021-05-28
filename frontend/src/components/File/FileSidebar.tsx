@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {Theme, createStyles, makeStyles} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -57,7 +57,7 @@ export default function FileSidebar(props: any) {
                 {props.channels.map((channel: string, number: number) => (
                     <FileGraphic aria-controls="simple-menu" aria-haspopup="true" signal={props.signals[channel]}
                                  source={props.sources[channel]} file={props.file} name={channel} key={number}
-                                 addOscillogram={props.addOscillogram}/>
+                                 addOscillogram={props.addOscillogram} deleteSignal={props.deleteSignal}/>
                 ))}
             </Drawer>
         </div>

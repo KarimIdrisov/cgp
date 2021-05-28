@@ -64,6 +64,7 @@ export default function ModelsLayout(props: any) {
     const [min, setMin] = React.useState(0)
     const [max, setMax] = React.useState(data?.samplesNumber)
     const [spline, setSpline] = React.useState(false)
+    const [markers, setMarkers] = React.useState(false)
     const [charts, setCharts] = React.useState([])
 
     function useForceUpdate() {
@@ -169,6 +170,17 @@ export default function ModelsLayout(props: any) {
         }
     }
 
+    function setFragment(min: number, max: number) {
+        setMin(min)
+        setMax(max)
+        forceUpdate()
+    }
+
+    function dropFragment() {
+        setMin(0)
+        setMax(data?.samplesNumber)
+    }
+
     function syncHandler(e: any) {
         const chartsArr = charts;
         // @ts-ignore
@@ -237,6 +249,49 @@ export default function ModelsLayout(props: any) {
         }
     }
 
+    function deleteOscillogram(name: string) {
+        const tmp = oscillograms.filter(channel => channel !== name)
+        setOscillograms(tmp)
+        forceUpdate()
+    }
+
+    function deleteSignal(name: string) {
+        if (data !== undefined) {
+
+            const tmpSources = data?.channelsSource
+            delete tmpSources[name]
+
+            const tmpChannels = data?.signals
+            delete tmpChannels[name]
+
+            const tmpChannelsXY = data?.signalsXY
+            delete tmpChannelsXY[name]
+
+            setData({
+                channelsNumber: +data?.channelsNumber - 1,
+                samplesNumber: data?.samplesNumber,
+                samplingRate: data?.samplingRate,
+                start: data?.start,
+                end: data?.end,
+                channelsName: data?.channelsName.filter( channel => channel !== name),
+                channelsSource: tmpSources,
+                signals: tmpChannels,
+                signalsXY: tmpChannelsXY,
+                time: data?.time,
+                file: data?.file
+            })
+            forceUpdate()
+        }
+    }
+
+    function turnInterpolation() {
+        setSpline(!spline)
+    }
+
+    function turnSpline() {
+        setMarkers(!markers)
+    }
+
     if (loading) {
         return (
             <div className={classes.progress}>
@@ -254,13 +309,16 @@ export default function ModelsLayout(props: any) {
                             saveNew={saveNew}
                 />
                 {oscillograms.length > 0 ? (
-                    <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}/>) : <></>}
+                    <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}
+                                       setFragment={setFragment} dropFragment={dropFragment}
+                                       spline={spline} markers={markers}
+                                       turnInterpolation={turnInterpolation} turnSpline={turnSpline}/>) : <></>}
                 {oscillograms.length > 0 ? (
                     <>
                         <Slider signal={data?.signalsXY[oscillograms[0]]}
                                 source={data?.channelsSource[oscillograms[0]]}
                                 sync={syncHandler}
-                                name={oscillograms[0]} height={100} min={min} max={max}
+                                name={oscillograms[0]} height={98} min={min} max={max}
                         />
                     </>) : (<></>)}
                 {oscillograms.length > 0 ? (
@@ -270,13 +328,16 @@ export default function ModelsLayout(props: any) {
                                 <FileOscillogram signal={data?.signalsXY[channel]} time={data?.start}
                                                  source={data?.channelsSource[channel]}
                                                  sync={syncHandler} updateRef={updateCharts}
-                                                 name={channel} height={height} key={number}/>
+                                                 deleteOscillogram={deleteOscillogram}
+                                                 name={channel} height={height} key={number}
+                                                 spline={spline} markers={markers}/>
                             </>)
                     })
                 ) : (<></>)}
                 <FileSidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
                              channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
-                             signals={data?.signals} signalsXY={data?.signalsXY}/>
+                             signals={data?.signals} signalsXY={data?.signalsXY}
+                             deleteSignal={deleteSignal}/>
             </Container>
         </React.Fragment>
     )

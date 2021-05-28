@@ -20,6 +20,11 @@ export default function FileGraphic(props: any) {
         setAnchorEl(null);
     }
 
+    function deleteSignal() {
+        props.deleteSignal(props.name)
+        setAnchorEl(null)
+    }
+
     function filter(data: any) {
         const maxPoints = 1000
         let k = 0
@@ -36,6 +41,7 @@ export default function FileGraphic(props: any) {
         <div>
             <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                 <MenuItem onClick={addGraphic}>Осцилограмма</MenuItem>
+                <MenuItem onClick={deleteSignal}>Удалить сигнал</MenuItem>
             </Menu>
             <div aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
                 <Typography style={{textAlign: 'center'}}>{props.name}</Typography>
