@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 // @ts-nocheck
 
 import CanvasJSReact from '../assets/canvasjs.stock.react';
@@ -7,58 +7,38 @@ const CanvasJS = CanvasJSReact.CanvasJS;
 const CanvasJSStockChart = CanvasJSReact.CanvasJSStockChart;
 
 export default function Slider(props: any) {
+    const [signal, setSignal] = React.useState()
+
+    useEffect(() => {
+        const tmp = []
+        for (let i = 0; i < props.signal.length; i++) {
+            tmp.push({
+                x: new Date(props.signal[i]['x']),
+                y: 0
+            })
+        }
+
+        // @ts-ignore
+        setSignal(tmp)
+    }, []);
+
 
     const options = {
         height: props.height,
-        animationEnabled: true,
-        exportEnabled: true,
+        animationEnabled: false,
+        exportEnabled: false,
         rangeChanged: props.sync,
         charts: [{
-            axisX: {
-                crosshair: {
-                    enabled: true,
-                    snapToDataPoint: true
-                }
-            },
-            axisY: {
-                crosshair: {
-                    enabled: true,
-                    //snapToDataPoint: true
-                }
-            },
             data: [{
-                type: "spline",
-                dataPoints: props.signal,
-                xValueType: "dateTime",
+                dataPoints: signal
             }]
         }],
         navigator: {
-          height: 52
+            height: 52,
+            data: [{
+                dataPoints: signal
+            }],
         },
-        rangeSelector: {
-            inputFields: {
-                startValue: 4000,
-                endValue: 6000,
-                valueFormatString: "###0"
-            },
-
-            buttons: [{
-                label: "1000",
-                range: 1000,
-                rangeType: "number"
-            },{
-                label: "2000",
-                range: 2000,
-                rangeType: "number"
-            },{
-                label: "5000",
-                range: 5000,
-                rangeType: "number"
-            },{
-                label: "All",
-                rangeType: "all"
-            }]
-        }
     };
     return (
         <div style={{margin: '5px', height: props.height}}>

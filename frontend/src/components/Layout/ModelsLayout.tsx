@@ -6,7 +6,15 @@ import FileHeader from '../File/FileHeader';
 import FileSidebar from "../File/FileSidebar";
 import OscillogramsTools from "../File/OscillogramsTools";
 import FileOscillogram from "../File/FileOscillogram";
-import {CircularProgress} from "@material-ui/core";
+import {
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle
+} from "@material-ui/core";
 import ISODateString from "../../utils/ISODateString";
 import getNewSignalData from "../../utils/getNewSignalData";
 import getType from "../../utils/getType";
@@ -66,6 +74,16 @@ export default function ModelsLayout(props: any) {
     const [spline, setSpline] = React.useState(false)
     const [markers, setMarkers] = React.useState(false)
     const [charts, setCharts] = React.useState([])
+
+    const [openStatistic, setOpenStatistic] = React.useState(false);
+
+    const handleClickOpen = () => {
+        setOpenStatistic(true);
+    };
+
+    const handleClose = () => {
+        setOpenStatistic(false);
+    };
 
     function useForceUpdate() {
         const [value, setValue] = useState(0); // integer state
@@ -292,6 +310,10 @@ export default function ModelsLayout(props: any) {
         setMarkers(!markers)
     }
 
+    function getStatistic(name: string) {
+
+    }
+
     if (loading) {
         return (
             <div className={classes.progress}>
@@ -306,7 +328,7 @@ export default function ModelsLayout(props: any) {
                 <FileHeader title="CGP - DSP" samples={data?.samplesNumber} fd={data?.samplingRate}
                             channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
                             startTime={data?.start} endTime={data?.end} sources={data?.channelsSource}
-                            saveNew={saveNew}
+                            saveNew={saveNew} getStatistic={getStatistic}
                 />
                 {oscillograms.length > 0 ? (
                     <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}
@@ -337,8 +359,24 @@ export default function ModelsLayout(props: any) {
                 <FileSidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
                              channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
                              signals={data?.signals} signalsXY={data?.signalsXY}
-                             deleteSignal={deleteSignal}/>
+                             deleteSignal={deleteSignal} getStatistic={getStatistic}/>
             </Container>
+
+            <Dialog
+                open={openStatistic}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description">
+                <DialogTitle id="alert-dialog-title">Статистика сигнала</DialogTitle>
+                <DialogContent>
+
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} color="primary" autoFocus>
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </React.Fragment>
     )
 }

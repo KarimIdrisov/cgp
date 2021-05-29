@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import {Link, useHistory} from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import {
     Button, Checkbox,
     Dialog,
@@ -15,6 +15,7 @@ import {
 } from "@material-ui/core";
 import clsx from "clsx";
 import {Alert, AlertTitle} from "@material-ui/lab";
+
 import dropData from '../../utils/dropData';
 import Impulse from "../Models/Impulse";
 import Leap from "../Models/Leap";
@@ -26,7 +27,6 @@ import ExpEnvelope from "../Models/ExpEnvelope";
 import BalanceEnvelope from "../Models/BalanceEnvelope";
 import TonalEnvelope from "../Models/TonalEnvelope";
 import LinearModule from "../Models/LinearModule";
-import axios from "axios";
 import RandomSignals from "../Models/RandomSignals";
 import Superposition from "../Models/Superposition";
 
@@ -85,7 +85,6 @@ interface Section {
 }
 
 const sections = [
-    {title: 'Фильтрация', url: '#'},
     {title: 'Настройки', url: '#'},
 ];
 
@@ -96,6 +95,7 @@ export default function FileHeader(props: any) {
     const [anchorFile, setAnchorFile] = React.useState<null | HTMLElement>(null);
     const [anchorGrams, setAnchorGrams] = React.useState<null | HTMLElement>(null);
     const [anchorModels, setAnchorModels] = React.useState<null | HTMLElement>(null);
+    const [anchorStatistic, setAnchorStatistic] = React.useState<null | HTMLElement>(null);
 
     const [names, setNames] = React.useState('')
 
@@ -111,10 +111,15 @@ export default function FileHeader(props: any) {
         setAnchorModels(event.currentTarget);
     };
 
+    const handleClickStatistics = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorStatistic(event.currentTarget);
+    };
+
     const handleClose = () => {
         setAnchorFile(null)
         setAnchorGrams(null)
         setAnchorModels(null)
+        setAnchorStatistic(null)
     };
 
     const handleCloseDialog = () => {
@@ -184,6 +189,11 @@ export default function FileHeader(props: any) {
     function addOscillogram(event: any) {
         props.addOscillogram(event.target.id)
         setAnchorGrams(null)
+    }
+
+    function getStatistic(event: any) {
+        props.getStatistic(event.target.id)
+        setAnchorStatistic(null)
     }
 
     function saveNewFileAs() {
@@ -358,6 +368,10 @@ export default function FileHeader(props: any) {
                             className={classes.grams}>
                         <Typography variant="h6">Моделирование</Typography>
                     </Button>
+                    <Button color="inherit" aria-controls="models" aria-haspopup="true" onClick={handleClickStatistics}
+                            className={classes.grams}>
+                        <Typography variant="h6">Статистика</Typography>
+                    </Button>
                     {sections.map((section: Section, number) => (
                         <Link color="inherit" key={number} to={section.url}
                               className={classes.toolbarLink}>
@@ -415,6 +429,30 @@ export default function FileHeader(props: any) {
                                addNewSignal={props.addNewSignal}/>
                 <Superposition samples={props.samples} close={handleClose} fd={props.fd}
                                addNewSignal={props.addNewSignal} channels={props.channels}/>
+            </Menu>
+
+            <Menu
+                id="file"
+                anchorEl={anchorFile}
+                keepMounted
+                open={Boolean(anchorFile)}
+                onClose={handleClose}>
+                <Link color="inherit" to={"/upload-file"}
+                      className={classes.Link}><MenuItem onClick={handleClose}>Загрузить файл</MenuItem></Link>
+                <MenuItem onClick={getInfo}>Информация о файле</MenuItem>
+                <MenuItem onClick={saveFile}>Сохранить файл</MenuItem>
+                <MenuItem onClick={saveFileAs}>Сохранить как...</MenuItem>
+            </Menu>
+
+            <Menu
+                id="statistic"
+                anchorEl={anchorStatistic}
+                keepMounted
+                open={Boolean(anchorStatistic)}
+                onClose={handleClose}>
+                {props.channels.map((channel: string, number: number) => (
+                    <MenuItem key={number} id={channel} onClick={getStatistic}>{channel}</MenuItem>
+                ))}
             </Menu>
         </>
     );

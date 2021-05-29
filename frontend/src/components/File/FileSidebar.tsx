@@ -57,7 +57,8 @@ export default function FileSidebar(props: any) {
                 {props.channels.map((channel: string, number: number) => (
                     <FileGraphic aria-controls="simple-menu" aria-haspopup="true" signal={props.signals[channel]}
                                  source={props.sources[channel]} file={props.file} name={channel} key={number}
-                                 addOscillogram={props.addOscillogram} deleteSignal={props.deleteSignal}/>
+                                 addOscillogram={props.addOscillogram} deleteSignal={props.deleteSignal}
+                                 getStatistic={props.getStatistic}/>
                 ))}
             </Drawer>
         </div>

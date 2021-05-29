@@ -37,11 +37,17 @@ export default function FileGraphic(props: any) {
         );
     }
 
+    function getStatistic(event: any) {
+        props.getStatistic(props.name)
+        setAnchorEl(null)
+    }
+
     return (
         <div>
             <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                 <MenuItem onClick={addGraphic}>Осцилограмма</MenuItem>
                 <MenuItem onClick={deleteSignal}>Удалить сигнал</MenuItem>
+                <MenuItem onClick={getStatistic}>Статистика</MenuItem>
             </Menu>
             <div aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
                 <Typography style={{textAlign: 'center'}}>{props.name}</Typography>

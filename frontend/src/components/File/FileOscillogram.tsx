@@ -36,7 +36,7 @@ export default function FileOscillogram(props: any) {
     }
 
     const options = {
-        animationEnabled: true,
+        animationEnabled: false,
         zoomEnabled: true,
         height: props.height,
         theme: "light2", // "light1", "dark1", "dark2"
@@ -46,6 +46,7 @@ export default function FileOscillogram(props: any) {
         rangeChanged: props.sync,
         axisX: {
             gridThickness: 1,
+            lineThickness: 1
         },
         data: [{
             type: (props.source === "Задержанный единичный импульс" || props.source === 'Задержанный единичный скачок') ? 'column' : (props.spline ? 'spline' : 'line'),

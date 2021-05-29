@@ -4,7 +4,15 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
 import FileHeader from '../File/FileHeader';
 import axios from "axios";
-import {CircularProgress} from "@material-ui/core";
+import {
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Typography
+} from "@material-ui/core";
 import FileSidebar from "../File/FileSidebar";
 import FileOscillogram from "../File/FileOscillogram";
 import OscillogramsTools from "../File/OscillogramsTools";
@@ -194,10 +202,13 @@ export default function FileLayout(props: any) {
 
     function syncHandler(e: any) {
         const chartsArr = charts;
+        console.log(e)
         // @ts-ignore
         for (let i = 0; i < chartsArr.length; i++) {
             // @ts-ignore
             const chart = chartsArr[i];
+
+            console.log(chart)
             // @ts-ignore
             if (!chart.options.axisX) chart.options.axisX = {};
 
@@ -305,6 +316,66 @@ export default function FileLayout(props: any) {
         setSpline(!spline)
     }
 
+    const [openStatistic, setOpenStatistic] = React.useState(false);
+
+    const handleClickOpen = () => {
+        setOpenStatistic(true);
+    };
+
+    const handleClose = () => {
+        setOpenStatistic(false);
+    };
+
+    const [average, setAverage] = React.useState<number>()
+    const [dispersion, setDispersion] = React.useState<number>()
+    const [deviation, setDeviation] = React.useState<number>()
+    const [variation, setVariation] = React.useState<number>()
+    const [asymmetry, setAsymmetry] = React.useState<number>()
+    const [excess, setExcess] = React.useState<number>()
+    const [minValue, setMinValue] = React.useState<number>()
+    const [maxValue, setMaxValue] = React.useState<number>()
+    const [quantile05, setQuantile05] = React.useState<number>()
+    const [quantile95, setQuantile95] = React.useState<number>()
+    const [median, setMedian] = React.useState<number>()
+
+    function getStatistic(name: string) {
+        if (data !== undefined) {
+            let sum = data?.signals[name].reduce((a: number, b: number) => +a + +b, 0)
+            const aver = sum / data?.samplesNumber
+            setAverage(aver)
+
+            let dispersionSum = 0
+            for (let i = 0; i < data?.signals[name].length; i++) {
+                dispersionSum += Math.pow((data?.signals[name][i] - aver), 2)
+            }
+            const disp = dispersionSum / data?.samplesNumber
+            setDispersion(disp)
+
+            setDeviation(Math.sqrt(+disp))
+
+            setVariation(Math.sqrt(+disp) / aver)
+            let asymmetrySum = 0
+            for (let i = 0; i < data?.signals[name].length; i++) {
+                asymmetrySum += Math.pow((data?.signals[name][i] - aver), 3)
+            }
+            asymmetrySum = asymmetrySum / data?.samplesNumber
+            setAsymmetry(asymmetrySum / Math.pow(Math.sqrt(+disp), 3))
+
+            let excessSum = 0
+            for (let i = 0; i < data?.signals[name].length; i++) {
+                excessSum += Math.pow((data?.signals[name][i] - aver), 4)
+            }
+            excessSum = excessSum / data?.samplesNumber
+            setExcess((excessSum / Math.pow(Math.sqrt(+disp), 4)) - 3)
+
+            setMinValue(Math.min(...data.signals[name]))
+            setMaxValue(Math.max(...data.signals[name]))
+
+
+        }
+        setOpenStatistic(true)
+    }
+
     if (loading) {
         return (
             <div className={classes.progress}>
@@ -319,7 +390,7 @@ export default function FileLayout(props: any) {
                 <FileHeader title="CGP - DSP" samples={data?.samplesNumber} fd={data?.samplingRate}
                             channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
                             startTime={data?.start} endTime={data?.end} sources={data?.channelsSource} update={update}
-                            addOscillogram={newOscillogram} saveNew={saveNew}
+                            addOscillogram={newOscillogram} saveNew={saveNew} getStatistic={getStatistic}
                 />
                 {oscillograms.length > 0 ? (
                     <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}
@@ -353,8 +424,34 @@ export default function FileLayout(props: any) {
                 <FileSidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
                              channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
                              signals={data?.signals} signalsXY={data?.signalsXY} min={min} max={max}
-                             deleteSignal={deleteSignal}/>
+                             deleteSignal={deleteSignal} getStatistic={getStatistic}/>
             </Container>
+
+            <Dialog
+                open={openStatistic}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description">
+                <DialogTitle id="alert-dialog-title">Статистика сигнала</DialogTitle>
+                <DialogContent>
+                    <Typography>Среднее = {average}</Typography>
+                    <Typography>Дисперсия = {dispersion}</Typography>
+                    <Typography>Ср. кв. откл = {deviation}</Typography>
+                    <Typography>Коэф. вариации = {variation}</Typography>
+                    <Typography>Коэф. асимметрии = {asymmetry}</Typography>
+                    <Typography>Коэф. эксцесса = {excess}</Typography>
+                    <Typography>Мин. зн-ие сигнала = {minValue}</Typography>
+                    <Typography>Макс. зн-ие сигнала = {maxValue}</Typography>
+                    <Typography>Квантиль порядка 0.05 = {quantile05}</Typography>
+                    <Typography>Квантиль порядка 0.95 = {quantile95}</Typography>
+                    <Typography>Медиана = {median}</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose} color="primary" autoFocus>
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </React.Fragment>
     )
 }
