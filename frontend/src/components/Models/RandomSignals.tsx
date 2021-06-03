@@ -190,7 +190,7 @@ export default function RandomSignals(props: any) {
                         autoFocus
                         margin="dense"
                         variant='outlined'
-                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[0] : ''}
                         type="number"
                         defaultValue={p}
                         onChange={num => setP(+num.target.value)}
@@ -201,6 +201,7 @@ export default function RandomSignals(props: any) {
                         label="Введите числа разделленые пробелом"
                         multiline
                         rows={3}
+                        defaultValue={pNums}
                         onChange={nums => setPNums(nums.target.value)}
                         variant="outlined"
                     />
@@ -221,6 +222,7 @@ export default function RandomSignals(props: any) {
                         multiline
                         variant="outlined"
                         rows={3}
+                        defaultValue={rNums}
                         onChange={nums => setRNums(nums.target.value)}
                     />
                     <TextField

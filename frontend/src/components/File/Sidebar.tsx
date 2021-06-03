@@ -2,7 +2,7 @@ import React from 'react';
 import {Theme, createStyles, makeStyles} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import FileGraphic from "./FileGraphic";
+import SidebarGraphic from "./SidebarGraphic";
 
 const drawerWidth = 350;
 
@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
-export default function FileSidebar(props: any) {
+export default function Sidebar(props: any) {
     const classes = useStyles();
 
     return (
@@ -55,10 +55,10 @@ export default function FileSidebar(props: any) {
             <Drawer className={classes.drawer} variant="permanent" classes={{paper: classes.drawerPaper}}
                     anchor="right">
                 {props.channels.map((channel: string, number: number) => (
-                    <FileGraphic aria-controls="simple-menu" aria-haspopup="true" signal={props.signals[channel]}
-                                 source={props.sources[channel]} file={props.file} name={channel} key={number}
-                                 addOscillogram={props.addOscillogram} deleteSignal={props.deleteSignal}
-                                 getStatistic={props.getStatistic}/>
+                    <SidebarGraphic aria-controls="simple-menu" aria-haspopup="true" signal={props.signals[channel]}
+                                    source={props.sources[channel]} file={props.file} name={channel} key={number}
+                                    addOscillogram={props.addOscillogram} deleteSignal={props.deleteSignal}
+                                    getStatistic={props.getStatistic}/>
                 ))}
             </Drawer>
         </div>

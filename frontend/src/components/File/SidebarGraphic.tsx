@@ -2,7 +2,7 @@ import React from 'react';
 import {VictoryAxis, VictoryBar, VictoryChart, VictoryLine} from "victory";
 import {Menu, MenuItem, Typography} from "@material-ui/core";
 
-export default function FileGraphic(props: any) {
+export default function SidebarGraphic(props: any) {
 
     const [anchorEl, setAnchorEl] = React.useState(null);
 

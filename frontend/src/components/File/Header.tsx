@@ -29,6 +29,7 @@ import TonalEnvelope from "../Models/TonalEnvelope";
 import LinearModule from "../Models/LinearModule";
 import RandomSignals from "../Models/RandomSignals";
 import Superposition from "../Models/Superposition";
+import DiscreteSignals from "../Models/DiscreteSignals";
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -88,7 +89,7 @@ const sections = [
     {title: 'Настройки', url: '#'},
 ];
 
-export default function FileHeader(props: any) {
+export default function Header(props: any) {
     const classes = useStyles();
     const [modelsFile, setModelsFile] = useState('')
 
@@ -351,7 +352,7 @@ export default function FileHeader(props: any) {
                 <Link color="inherit" className={classes.toolbarLink} to="/" onClick={dropData}>
                     <Typography component="h2" variant="h5" color="inherit" align="center"
                                 className={classes.toolbarTitle}>
-                        {props.title}
+                        CGP-DSP
                     </Typography>
                 </Link>
                 <Toolbar>
@@ -410,21 +411,8 @@ export default function FileHeader(props: any) {
                 keepMounted
                 open={Boolean(anchorModels)}
                 onClose={handleClose}>
-                <MenuItem onClick={deleteSignals}>Удалить все сигналы</MenuItem>
-                <Impulse samples={props.samples} close={handleClose} fd={props.fd} addNewSignal={props.addNewSignal}/>
-                <Leap samples={props.samples} close={handleClose} fd={props.fd} addNewSignal={props.addNewSignal}/>
-                <Exponent samples={props.samples} close={handleClose} fd={props.fd} addNewSignal={props.addNewSignal}/>
-                <Sinusoida samples={props.samples} close={handleClose} fd={props.fd} addNewSignal={props.addNewSignal}/>
-                <Meandr samples={props.samples} close={handleClose} fd={props.fd} addNewSignal={props.addNewSignal}/>
-                <Pila samples={props.samples} close={handleClose} fd={props.fd} addNewSignal={props.addNewSignal}/>
-                <ExpEnvelope samples={props.samples} close={handleClose} fd={props.fd}
-                             addNewSignal={props.addNewSignal}/>
-                <BalanceEnvelope samples={props.samples} close={handleClose} fd={props.fd}
+                <DiscreteSignals samples={props.samples} close={handleClose} fd={props.fd}
                                  addNewSignal={props.addNewSignal}/>
-                <TonalEnvelope samples={props.samples} close={handleClose} fd={props.fd}
-                               addNewSignal={props.addNewSignal}/>
-                <LinearModule samples={props.samples} close={handleClose} fd={props.fd}
-                              addNewSignal={props.addNewSignal}/>
                 <RandomSignals samples={props.samples} close={handleClose} fd={props.fd}
                                addNewSignal={props.addNewSignal}/>
                 <Superposition samples={props.samples} close={handleClose} fd={props.fd}

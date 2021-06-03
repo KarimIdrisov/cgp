@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
-import FileHeader from '../File/FileHeader';
+import Header from '../File/Header';
 import axios from "axios";
 import {
     Button,
@@ -13,12 +13,13 @@ import {
     DialogTitle,
     Typography
 } from "@material-ui/core";
-import FileSidebar from "../File/FileSidebar";
-import FileOscillogram from "../File/FileOscillogram";
+import Sidebar from "../File/Sidebar";
+import Oscillogram from "../File/Oscillogram";
 import OscillogramsTools from "../File/OscillogramsTools";
 import getNewSignalData from "../../utils/getNewSignalData";
 import getType from "../../utils/getType";
 import Slider from "../Slider";
+import sort from "../../utils/sort";
 
 const useStyles = makeStyles((theme) => ({
     mainGrid: {
@@ -202,13 +203,11 @@ export default function FileLayout(props: any) {
 
     function syncHandler(e: any) {
         const chartsArr = charts;
-        console.log(e)
         // @ts-ignore
         for (let i = 0; i < chartsArr.length; i++) {
             // @ts-ignore
             const chart = chartsArr[i];
 
-            console.log(chart)
             // @ts-ignore
             if (!chart.options.axisX) chart.options.axisX = {};
 
@@ -371,7 +370,10 @@ export default function FileLayout(props: any) {
             setMinValue(Math.min(...data.signals[name]))
             setMaxValue(Math.max(...data.signals[name]))
 
-
+            const sortedData = sort(data.signals[name])
+            setQuantile05(sortedData[Math.round(0.05*data.samplesNumber)])
+            setQuantile95(sortedData[Math.round(0.95*data.samplesNumber)])
+            setMedian(sortedData[Math.round(0.5*data.samplesNumber)])
         }
         setOpenStatistic(true)
     }
@@ -387,10 +389,10 @@ export default function FileLayout(props: any) {
         <React.Fragment>
             <CssBaseline/>
             <Container className={classes.container}>
-                <FileHeader title="CGP - DSP" samples={data?.samplesNumber} fd={data?.samplingRate}
-                            channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
-                            startTime={data?.start} endTime={data?.end} sources={data?.channelsSource} update={update}
-                            addOscillogram={newOscillogram} saveNew={saveNew} getStatistic={getStatistic}
+                <Header samples={data?.samplesNumber} fd={data?.samplingRate}
+                        channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
+                        startTime={data?.start} endTime={data?.end} sources={data?.channelsSource} update={update}
+                        addOscillogram={newOscillogram} saveNew={saveNew} getStatistic={getStatistic}
                 />
                 {oscillograms.length > 0 ? (
                     <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}
@@ -399,8 +401,8 @@ export default function FileLayout(props: any) {
                 <div style={{display: 'flex', flexDirection: 'column'}}>
                     {oscillograms.length > 0 ? (
                         <>
-                            <Slider signal={data?.signalsXY[oscillograms[0]]}
-                                    source={data?.channelsSource[oscillograms[0]]}
+                            <Slider signal={data?.signalsXY[data?.channelsName[0]]}
+                                    source={data?.channelsSource[data?.channelsName[0]]}
                                     sync={syncHandler} updateRef={updateCharts}
                                     name={oscillograms[0]} height={98} min={min} max={max}
                             />
@@ -409,22 +411,22 @@ export default function FileLayout(props: any) {
                         oscillograms.map((channel, number) => {
                             return (
                                 <>
-                                    <FileOscillogram signal={data?.signalsXY[channel]} key={number}
-                                                     source={data?.channelsSource[channel]}
-                                                     sync={syncHandler} updateRef={updateCharts}
-                                                     name={channel} height={height} min={min} max={max}
-                                                     deleteOscillogram={deleteOscillogram}
-                                                     spline={spline} markers={markers}
+                                    <Oscillogram signal={data?.signalsXY[channel]} key={number}
+                                                 source={data?.channelsSource[channel]}
+                                                 sync={syncHandler} updateRef={updateCharts}
+                                                 name={channel} height={height} min={min} max={max}
+                                                 deleteOscillogram={deleteOscillogram}
+                                                 spline={spline} markers={markers}
                                     />
                                 </>)
                         })
                     ) : (<></>)}
                 </div>
 
-                <FileSidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
-                             channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
-                             signals={data?.signals} signalsXY={data?.signalsXY} min={min} max={max}
-                             deleteSignal={deleteSignal} getStatistic={getStatistic}/>
+                <Sidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
+                         channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
+                         signals={data?.signals} signalsXY={data?.signalsXY} min={min} max={max}
+                         deleteSignal={deleteSignal} getStatistic={getStatistic}/>
             </Container>
 
             <Dialog
@@ -434,14 +436,14 @@ export default function FileLayout(props: any) {
                 aria-describedby="alert-dialog-description">
                 <DialogTitle id="alert-dialog-title">Статистика сигнала</DialogTitle>
                 <DialogContent>
-                    <Typography>Среднее = {average}</Typography>
-                    <Typography>Дисперсия = {dispersion}</Typography>
-                    <Typography>Ср. кв. откл = {deviation}</Typography>
-                    <Typography>Коэф. вариации = {variation}</Typography>
-                    <Typography>Коэф. асимметрии = {asymmetry}</Typography>
-                    <Typography>Коэф. эксцесса = {excess}</Typography>
-                    <Typography>Мин. зн-ие сигнала = {minValue}</Typography>
-                    <Typography>Макс. зн-ие сигнала = {maxValue}</Typography>
+                    <Typography>Среднее = {average !== undefined ? Math.round(average * 100) / 100 : ''}</Typography>
+                    <Typography>Дисперсия = {dispersion !== undefined ? Math.round(dispersion * 100) / 100 : ''}</Typography>
+                    <Typography>Ср. кв. откл = {deviation !== undefined ? Math.round(deviation * 100) / 100 : ''}</Typography>
+                    <Typography>Коэф. вариации = {variation !== undefined ? Math.round(variation * 100) / 100 : ''}</Typography>
+                    <Typography>Коэф. асимметрии = {asymmetry !== undefined ? Math.round(asymmetry * 100) / 100 : ''}</Typography>
+                    <Typography>Коэф. эксцесса = {excess !== undefined ? Math.round(excess * 100) / 100 : ''}</Typography>
+                    <Typography>Мин. зн-ие сигнала = {minValue !== undefined ? Math.round(minValue * 100) / 100 : ''}</Typography>
+                    <Typography>Макс. зн-ие сигнала = {maxValue !== undefined ? Math.round(maxValue * 100) / 100 : ''}</Typography>
                     <Typography>Квантиль порядка 0.05 = {quantile05}</Typography>
                     <Typography>Квантиль порядка 0.95 = {quantile95}</Typography>
                     <Typography>Медиана = {median}</Typography>

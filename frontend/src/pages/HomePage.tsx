@@ -7,7 +7,7 @@ export default function HomePage() {
 
     return (
         <>
-            <Header title="CGP - DSP"/>
+            <Header/>
             <MainContent/>
             <Footer/>
         </>

@@ -2,10 +2,10 @@ import React, {useEffect, useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Container from '@material-ui/core/Container';
-import FileHeader from '../File/FileHeader';
-import FileSidebar from "../File/FileSidebar";
+import Header from '../File/Header';
+import Sidebar from "../File/Sidebar";
 import OscillogramsTools from "../File/OscillogramsTools";
-import FileOscillogram from "../File/FileOscillogram";
+import Oscillogram from "../File/Oscillogram";
 import {
     Button,
     CircularProgress,
@@ -13,7 +13,7 @@ import {
     DialogActions,
     DialogContent,
     DialogContentText,
-    DialogTitle
+    DialogTitle, Typography
 } from "@material-ui/core";
 import ISODateString from "../../utils/ISODateString";
 import getNewSignalData from "../../utils/getNewSignalData";
@@ -310,8 +310,54 @@ export default function ModelsLayout(props: any) {
         setMarkers(!markers)
     }
 
-    function getStatistic(name: string) {
+    const [average, setAverage] = React.useState<number>()
+    const [dispersion, setDispersion] = React.useState<number>()
+    const [deviation, setDeviation] = React.useState<number>()
+    const [variation, setVariation] = React.useState<number>()
+    const [asymmetry, setAsymmetry] = React.useState<number>()
+    const [excess, setExcess] = React.useState<number>()
+    const [minValue, setMinValue] = React.useState<number>()
+    const [maxValue, setMaxValue] = React.useState<number>()
+    const [quantile05, setQuantile05] = React.useState<number>()
+    const [quantile95, setQuantile95] = React.useState<number>()
+    const [median, setMedian] = React.useState<number>()
 
+    function getStatistic(name: string) {
+        if (data !== undefined) {
+            let sum = data?.signals[name].reduce((a: number, b: number) => +a + +b, 0)
+            const aver = sum / data?.samplesNumber
+            setAverage(aver)
+
+            let dispersionSum = 0
+            for (let i = 0; i < data?.signals[name].length; i++) {
+                dispersionSum += Math.pow((data?.signals[name][i] - aver), 2)
+            }
+            const disp = dispersionSum / data?.samplesNumber
+            setDispersion(disp)
+
+            setDeviation(Math.sqrt(+disp))
+
+            setVariation(Math.sqrt(+disp) / aver)
+            let asymmetrySum = 0
+            for (let i = 0; i < data?.signals[name].length; i++) {
+                asymmetrySum += Math.pow((data?.signals[name][i] - aver), 3)
+            }
+            asymmetrySum = asymmetrySum / data?.samplesNumber
+            setAsymmetry(asymmetrySum / Math.pow(Math.sqrt(+disp), 3))
+
+            let excessSum = 0
+            for (let i = 0; i < data?.signals[name].length; i++) {
+                excessSum += Math.pow((data?.signals[name][i] - aver), 4)
+            }
+            excessSum = excessSum / data?.samplesNumber
+            setExcess((excessSum / Math.pow(Math.sqrt(+disp), 4)) - 3)
+
+            setMinValue(Math.min(...data.signals[name]))
+            setMaxValue(Math.max(...data.signals[name]))
+
+
+        }
+        setOpenStatistic(true)
     }
 
     if (loading) {
@@ -325,10 +371,10 @@ export default function ModelsLayout(props: any) {
         <React.Fragment>
             <CssBaseline/>
             <Container className={classes.container}>
-                <FileHeader title="CGP - DSP" samples={data?.samplesNumber} fd={data?.samplingRate}
-                            channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
-                            startTime={data?.start} endTime={data?.end} sources={data?.channelsSource}
-                            saveNew={saveNew} getStatistic={getStatistic}
+                <Header samples={data?.samplesNumber} fd={data?.samplingRate}
+                        channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
+                        startTime={data?.start} endTime={data?.end} sources={data?.channelsSource}
+                        saveNew={saveNew} getStatistic={getStatistic}
                 />
                 {oscillograms.length > 0 ? (
                     <OscillogramsTools height={height} min={min} max={max} changeSize={changeSize}
@@ -337,29 +383,30 @@ export default function ModelsLayout(props: any) {
                                        turnInterpolation={turnInterpolation} turnSpline={turnSpline}/>) : <></>}
                 {oscillograms.length > 0 ? (
                     <>
-                        <Slider signal={data?.signalsXY[oscillograms[0]]}
-                                source={data?.channelsSource[oscillograms[0]]}
-                                sync={syncHandler}
-                                name={oscillograms[0]} height={98} min={min} max={max}
+                        <Slider signal={data?.signalsXY[data?.channelsName[0]]}
+                                source={data?.channelsSource[data?.channelsName[0]]}
+                                sync={syncHandler} updateRef={updateCharts}
+                                name={data?.channelsName[0]} height={98} min={min} max={max}
                         />
                     </>) : (<></>)}
                 {oscillograms.length > 0 ? (
                     oscillograms.map((channel, number) => {
                         return (
                             <>
-                                <FileOscillogram signal={data?.signalsXY[channel]} time={data?.start}
-                                                 source={data?.channelsSource[channel]}
-                                                 sync={syncHandler} updateRef={updateCharts}
-                                                 deleteOscillogram={deleteOscillogram}
-                                                 name={channel} height={height} key={number}
-                                                 spline={spline} markers={markers}/>
+                                <Oscillogram signal={data?.signalsXY[channel]} time={data?.start}
+                                             source={data?.channelsSource[channel]}
+                                             sync={syncHandler} updateRef={updateCharts}
+                                             deleteOscillogram={deleteOscillogram}
+                                             name={channel} height={height} key={number}
+                                             spline={spline} markers={markers}
+                                />
                             </>)
                     })
                 ) : (<></>)}
-                <FileSidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
-                             channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
-                             signals={data?.signals} signalsXY={data?.signalsXY}
-                             deleteSignal={deleteSignal} getStatistic={getStatistic}/>
+                <Sidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
+                         channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
+                         signals={data?.signals} signalsXY={data?.signalsXY}
+                         deleteSignal={deleteSignal} getStatistic={getStatistic}/>
             </Container>
 
             <Dialog
@@ -369,7 +416,17 @@ export default function ModelsLayout(props: any) {
                 aria-describedby="alert-dialog-description">
                 <DialogTitle id="alert-dialog-title">Статистика сигнала</DialogTitle>
                 <DialogContent>
-
+                    <Typography>Среднее = {average !== undefined ? Math.round(average * 100) / 100 : ''}</Typography>
+                    <Typography>Дисперсия = {dispersion !== undefined ? Math.round(dispersion * 100) / 100 : ''}</Typography>
+                    <Typography>Ср. кв. откл = {deviation !== undefined ? Math.round(deviation * 100) / 100 : ''}</Typography>
+                    <Typography>Коэф. вариации = {variation !== undefined ? Math.round(variation * 100) / 100 : ''}</Typography>
+                    <Typography>Коэф. асимметрии = {asymmetry !== undefined ? Math.round(asymmetry * 100) / 100 : ''}</Typography>
+                    <Typography>Коэф. эксцесса = {excess !== undefined ? Math.round(excess * 100) / 100 : ''}</Typography>
+                    <Typography>Мин. зн-ие сигнала = {minValue !== undefined ? Math.round(minValue * 100) / 100 : ''}</Typography>
+                    <Typography>Макс. зн-ие сигнала = {maxValue !== undefined ? Math.round(maxValue * 100) / 100 : ''}</Typography>
+                    <Typography>Квантиль порядка 0.05 = {quantile05}</Typography>
+                    <Typography>Квантиль порядка 0.95 = {quantile95}</Typography>
+                    <Typography>Медиана = {median}</Typography>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary" autoFocus>

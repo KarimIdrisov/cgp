@@ -1,9 +1,12 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import {Grid, Link, Typography} from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   mainFeaturedPost: {
+    marginLeft: '10px',
+    marginRight: '10px',
     position: 'relative',
     backgroundColor: theme.palette.grey[800],
     color: theme.palette.common.white,
@@ -35,8 +38,22 @@ export default function MainContent() {
   const classes = useStyles();
 
   return (
-    <Paper className={classes.mainFeaturedPost}>
-
-    </Paper>
+      <Paper className={classes.mainFeaturedPost}>
+        {/* Increase the priority of the hero background image */}
+        {<img style={{ display: 'none' }} alt={'main image description'} />}
+        <div className={classes.overlay} />
+        <Grid container>
+          <Grid item md={6}>
+            <div className={classes.mainFeaturedPostContent}>
+              <Typography component="h1" variant="h3" color="inherit" gutterBottom>
+                Проект по компьютерной графике.
+              </Typography>
+              <Typography variant="h5" color="inherit" paragraph>
+                Визуализация и моделирование многоканальных сигналов
+              </Typography>
+            </div>
+          </Grid>
+        </Grid>
+      </Paper>
   );
 }

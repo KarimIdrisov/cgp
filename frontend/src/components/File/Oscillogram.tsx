@@ -11,7 +11,7 @@ const initialState = {
     mouseY: null,
 };
 
-export default function FileOscillogram(props: any) {
+export default function Oscillogram(props: any) {
 
     const [state, setState] = React.useState<{
         mouseX: null | number;
@@ -72,7 +72,7 @@ export default function FileOscillogram(props: any) {
                         ? {top: state.mouseY, left: state.mouseX}
                         : undefined}>
                 <MenuItem onClick={deleteOscillogram}>Удалить осцилограмму</MenuItem>
-                <MenuItem onClick={handleClose}>Статистика</MenuItem>
+                {/*<MenuItem onClick={props.getStatistic(props.name)}>Статистика</MenuItem>*/}
             </Menu>
         </div>
     );

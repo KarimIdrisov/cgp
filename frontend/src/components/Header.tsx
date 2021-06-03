@@ -22,8 +22,8 @@ const useStyles = makeStyles((theme) => ({
         flex: 1,
     },
     toolbarSecondary: {
-        justifyContent: 'space-between',
         overflowX: 'auto',
+
     },
     toolbarLink: {
         padding: theme.spacing(0.5),
@@ -34,7 +34,6 @@ const useStyles = makeStyles((theme) => ({
     },
     toolbarBtn: {
         height: "30px",
-        width: "80px",
         textTransform: "none",
     },
     Link: {
@@ -110,7 +109,7 @@ export default function Header(props: any) {
                 <Link color="inherit" className={classes.toolbarLink} to="/" onClick={dropData}>
                     <Typography component="h2" variant="h5" color="inherit" align="center"
                                 className={classes.toolbarTitle}>
-                        {props.title}
+                        CGP-DSP
                     </Typography>
                 </Link>
 
