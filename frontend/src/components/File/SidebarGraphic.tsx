@@ -42,10 +42,16 @@ export default function SidebarGraphic(props: any) {
         setAnchorEl(null)
     }
 
+    function analyse() {
+        props.analyse(props.name)
+        setAnchorEl(null)
+    }
+
     return (
         <div>
             <Menu id="simple-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                 <MenuItem onClick={addGraphic}>Осцилограмма</MenuItem>
+                <MenuItem onClick={analyse}>Анализ</MenuItem>
                 <MenuItem onClick={deleteSignal}>Удалить сигнал</MenuItem>
                 <MenuItem onClick={getStatistic}>Статистика</MenuItem>
             </Menu>

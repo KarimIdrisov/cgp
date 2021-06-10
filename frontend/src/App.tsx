@@ -13,7 +13,6 @@ export default function App() {
             <Router>
                 <Switch>
                     <Route exact path="/model" component={ModelPage}/>
-                    <Route exact path="/file-oscillogram" component={FilePage}/>
                     <Route exact path="/file" component={FilePage}/>
                     <Route path="/modeling/:filename" component={ModelingPage}/>
                     <Route path="/upload-file" component={FileUploadPage}/>

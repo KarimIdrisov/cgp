@@ -49,4 +49,3 @@ export default function Slider(props: any) {
         </div>
     );
 }
-

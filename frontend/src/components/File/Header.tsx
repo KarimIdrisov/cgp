@@ -30,6 +30,8 @@ import LinearModule from "../Models/LinearModule";
 import RandomSignals from "../Models/RandomSignals";
 import Superposition from "../Models/Superposition";
 import DiscreteSignals from "../Models/DiscreteSignals";
+import {red} from "@material-ui/core/colors";
+import getParamsNames from "../../utils/getParamsNames";
 
 const useStyles = makeStyles((theme) => ({
     toolbar: {
@@ -92,11 +94,15 @@ const sections = [
 export default function Header(props: any) {
     const classes = useStyles();
     const [modelsFile, setModelsFile] = useState('')
+    const [k, setK] = useState(0)
 
     const [anchorFile, setAnchorFile] = React.useState<null | HTMLElement>(null);
     const [anchorGrams, setAnchorGrams] = React.useState<null | HTMLElement>(null);
     const [anchorModels, setAnchorModels] = React.useState<null | HTMLElement>(null);
     const [anchorStatistic, setAnchorStatistic] = React.useState<null | HTMLElement>(null);
+    const [anchorAnalyse, setAnchorAnalyse] = React.useState<null | HTMLElement>(null);
+    const [anchorSpectreAnalyse, setAnchorSpectreAnalyse] = React.useState<null | HTMLElement>(null);
+    const [anchorSettings, setAnchorSettings] = React.useState<null | HTMLElement>(null);
 
     const [names, setNames] = React.useState('')
 
@@ -112,8 +118,25 @@ export default function Header(props: any) {
         setAnchorModels(event.currentTarget);
     };
 
-    const handleClickStatistics = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleClickStatistics = (event: React.MouseEvent<HTMLLIElement>) => {
         setAnchorStatistic(event.currentTarget);
+    };
+
+    const handleClickAnalyse = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorAnalyse(event.currentTarget);
+    };
+
+    const handleClickSettings = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorSettings(event.currentTarget);
+    };
+
+    const handleClickSpectreAnalyse = (event: React.MouseEvent<HTMLLIElement>) => {
+        if (props.haveOscillogram) {
+            redirectOnAnalyse()
+            setAnchorAnalyse(null)
+            return;
+        }
+        setAnchorSpectreAnalyse(event.currentTarget);
     };
 
     const handleClose = () => {
@@ -121,6 +144,9 @@ export default function Header(props: any) {
         setAnchorGrams(null)
         setAnchorModels(null)
         setAnchorStatistic(null)
+        setAnchorAnalyse(null)
+        setAnchorSpectreAnalyse(null)
+        setAnchorSettings(null)
     };
 
     const handleCloseDialog = () => {
@@ -133,7 +159,14 @@ export default function Header(props: any) {
         setOpenInfo(true);
         setAnchorFile(null);
     }
+
+    function changeK() {
+        setOpenK(true)
+        setAnchorSettings(null)
+    }
+
     const [openInfo, setOpenInfo] = React.useState(false);
+    const [openK, setOpenK] = React.useState(false);
     const [saveModels, setSaveModels] = React.useState(false);
     const [hide, setHide] = useState(true)
     const [saveNewFile, setSaveNewFile] = useState(false)
@@ -202,6 +235,21 @@ export default function Header(props: any) {
         props.saveNew(names, modelsFile)
         setNames('')
     }
+
+    function redirectOnAnalyse() {
+        props.newAnalyseFromOscillograms()
+    }
+
+    function getAnalyse(event: any) {
+        props.newAnalyseFromName(event.target.id)
+        setAnchorSpectreAnalyse(null)
+    }
+
+    function setNewK() {
+        props.updateK(k)
+        setOpenK(false)
+    }
+
 
     return (
         <>
@@ -348,6 +396,30 @@ export default function Header(props: any) {
                 </DialogActions>
             </Dialog>
 
+            <Dialog open={openK} onClose={handleClose} aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description">
+                <DialogTitle id="alert-dialog-title">{"Текущее состояние многоканального сигнала"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description" className={classes.dialog}>
+                        <Typography>Текущее - {props.k}</Typography>
+                        <TextField
+                            style={{marginRight: '10px'}}
+                            autoFocus
+                            margin="dense"
+                            variant='outlined'
+                            type="number"
+                            defaultValue={props.k}
+                            onChange={num => setK(+num.target.value)}
+                        />
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={setNewK} color="primary" autoFocus>
+                        ОК
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <Toolbar className={classes.toolbar}>
                 <Link color="inherit" className={classes.toolbarLink} to="/" onClick={dropData}>
                     <Typography component="h2" variant="h5" color="inherit" align="center"
@@ -369,16 +441,14 @@ export default function Header(props: any) {
                             className={classes.grams}>
                         <Typography variant="h6">Моделирование</Typography>
                     </Button>
-                    <Button color="inherit" aria-controls="models" aria-haspopup="true" onClick={handleClickStatistics}
+                    <Button color="inherit" aria-controls="models" aria-haspopup="true" onClick={handleClickAnalyse}
                             className={classes.grams}>
-                        <Typography variant="h6">Статистика</Typography>
+                        <Typography variant="h6">Анализ</Typography>
                     </Button>
-                    {sections.map((section: Section, number) => (
-                        <Link color="inherit" key={number} to={section.url}
-                              className={classes.toolbarLink}>
-                            <Typography variant="h6">{section.title}</Typography>
-                        </Link>
-                    ))}
+                    <Button color="inherit" aria-controls="models" aria-haspopup="true" onClick={handleClickSettings}
+                            className={classes.grams}>
+                        <Typography variant="h6">Настройки</Typography>
+                    </Button>
                 </Toolbar>
             </Toolbar>
             <Menu
@@ -406,6 +476,15 @@ export default function Header(props: any) {
             </Menu>
 
             <Menu
+                id="file"
+                anchorEl={anchorSettings}
+                keepMounted
+                open={Boolean(anchorSettings)}
+                onClose={handleClose}>
+                <MenuItem onClick={changeK}>Изменить кол-во интервалов</MenuItem>
+            </Menu>
+
+            <Menu
                 id="models"
                 anchorEl={anchorModels}
                 keepMounted
@@ -430,6 +509,27 @@ export default function Header(props: any) {
                 <MenuItem onClick={getInfo}>Информация о файле</MenuItem>
                 <MenuItem onClick={saveFile}>Сохранить файл</MenuItem>
                 <MenuItem onClick={saveFileAs}>Сохранить как...</MenuItem>
+            </Menu>
+
+            <Menu
+                id="statistic"
+                anchorEl={anchorAnalyse}
+                keepMounted
+                open={Boolean(anchorAnalyse)}
+                onClose={handleClose}>
+                <MenuItem onClick={handleClickStatistics}>Статистика</MenuItem>
+                <MenuItem onClick={handleClickSpectreAnalyse}>Спектральный анализ</MenuItem>
+            </Menu>
+
+            <Menu
+                id="statistic"
+                anchorEl={anchorSpectreAnalyse}
+                keepMounted
+                open={Boolean(anchorSpectreAnalyse)}
+                onClose={handleClose}>
+                {props.channels.map((channel: string, number: number) => (
+                            <MenuItem key={number} id={channel} onClick={getAnalyse}>{channel}</MenuItem>
+                    ))}
             </Menu>
 
             <Menu

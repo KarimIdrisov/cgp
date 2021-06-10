@@ -58,7 +58,7 @@ export default function Sidebar(props: any) {
                     <SidebarGraphic aria-controls="simple-menu" aria-haspopup="true" signal={props.signals[channel]}
                                     source={props.sources[channel]} file={props.file} name={channel} key={number}
                                     addOscillogram={props.addOscillogram} deleteSignal={props.deleteSignal}
-                                    getStatistic={props.getStatistic}/>
+                                    getStatistic={props.getStatistic} analyse={props.analyse}/>
                 ))}
             </Drawer>
         </div>

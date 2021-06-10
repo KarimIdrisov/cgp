@@ -40,6 +40,7 @@ app.get('/get-file', (req, res) => {
         const startTime = lines[9];
         let channelsName = lines[11].split(';');
         channelsName = channelsName.slice(0, +channelsNumber);
+        const sliderData = []
 
         let reverseStartDay = startDate.split("-")
         reverseStartDay = reverseStartDay[2] + '-' + reverseStartDay[1] + '-' + reverseStartDay[0]
@@ -64,7 +65,9 @@ app.get('/get-file', (req, res) => {
                     'y': +lines[i].split(' ')[j]
                 })
             }
+            sliderData.push(new Date(XYstart.getTime() + (i * (1 / samplingRate)) * 1000).getTime())
         }
+
 
 
         for (let i = 1; i < +samplesNumber; i++) {
@@ -81,7 +84,8 @@ app.get('/get-file', (req, res) => {
             signals: signals,
             signalsXY: signalsXY,
             time: 1 / samplingRate,
-            file: req.query.id
+            file: req.query.id,
+            sliderData: sliderData
         });
     })
 });

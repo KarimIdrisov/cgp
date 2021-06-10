@@ -11,7 +11,7 @@ const initialState = {
     mouseY: null,
 };
 
-export default function Oscillogram(props: any) {
+export default function AnalyseGrams(props: any) {
 
     const [state, setState] = React.useState<{
         mouseX: null | number;
@@ -47,17 +47,15 @@ export default function Oscillogram(props: any) {
         axisX: {
             gridThickness: 1,
             lineThickness: 1,
-            viewportMinimum: props.min !== 0 ? props.min : null,
-            viewportMaximum: props.max !== 0 ? props.max : null
         },
         data: [{
-            type: (props.source === "Задержанный единичный импульс" || props.source === 'Задержанный единичный скачок') ? 'column' : (props.spline ? 'spline' : 'line'),
-            dataPoints: props.signal,
-            xValueType: "dateTime",
+            type: 'line',
+            dataPoints: props.current === 'amplitudeSpectre' ? props.signal : props.power,
             markerType: "circle",
             markerSize: props.markers ? 8 : 0,
         }],
     }
+    console.log(props.power, props.current)
     return (
         <div style={{margin: '5px', height: props.height, cursor: 'context-menu'}} onContextMenu={handleClick}>
             <CanvasJSChart id={props.name} options={options} onRef={(ref: any) => props.updateRef(ref)}
