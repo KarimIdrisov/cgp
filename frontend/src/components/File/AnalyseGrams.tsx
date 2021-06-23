@@ -1,7 +1,7 @@
 import React from 'react';
 
 import CanvasJSReact from '../../assets/canvasjs.react';
-import {Menu, MenuItem} from "@material-ui/core";
+import {Menu, MenuItem, Typography} from "@material-ui/core";
 
 const CanvasJS = CanvasJSReact.CanvasJS;
 const CanvasJSChart = CanvasJSReact.CanvasJSChart;
@@ -32,7 +32,7 @@ export default function AnalyseGrams(props: any) {
 
     function deleteOscillogram() {
         setState(initialState);
-        props.deleteOscillogram(props.name)
+        props.deleteAnalyse(props.name)
     }
 
     const options = {
@@ -42,11 +42,14 @@ export default function AnalyseGrams(props: any) {
         theme: "light2", // "light1", "dark1", "dark2"
         axisY: {
             title: props.name,
+            logarithmic: props.log
         },
         rangeChanged: props.sync,
         axisX: {
             gridThickness: 1,
             lineThickness: 1,
+            viewportMinimum: props.min !== 0 ? props.min : null,
+            viewportMaximum: props.max !== 0 ? props.max : null
         },
         data: [{
             type: 'line',
@@ -55,7 +58,7 @@ export default function AnalyseGrams(props: any) {
             markerSize: props.markers ? 8 : 0,
         }],
     }
-    console.log(props.power, props.current)
+
     return (
         <div style={{margin: '5px', height: props.height, cursor: 'context-menu'}} onContextMenu={handleClick}>
             <CanvasJSChart id={props.name} options={options} onRef={(ref: any) => props.updateRef(ref)}

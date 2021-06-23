@@ -1,62 +1,49 @@
 import frand from "../utils/frand";
+import print from "../utils/print"
 
 export default function regression(start, samples, fd, dispersion, p, r, pNums, rNums, notObject = false) {
+
+    let xValues = []
+    let yValues = []
+
     const dataTmp = []
     pNums = pNums.split(' ')
     rNums = rNums.split(' ')
 
+    for (let i = 0; i < samples; i = i + 1) {
+        xValues.push(nValues(dispersion));
+        yValues.push(xValues[i] + sum(rNums, xValues) - sum(pNums, yValues))
+    }
+    print(xValues, yValues)
+
     if (notObject) {
         for (let i = 0; i < samples; i++) {
-            dataTmp.push(getARMA(samples, dispersion, p, r, pNums, rNums)[0])
+            dataTmp.push(yValues[i])
         }
         return dataTmp
     } else {
         for (let i = 0; i < samples; i++) {
             dataTmp.push({
-                'y': getARMA(samples, dispersion, p, r, pNums, rNums)[0],
+                'y': yValues[i],
                 'x': (new Date(start.getTime() + (i * (1 / fd)) * 1000)).getTime()
             })
         }
         return dataTmp
     }
-}
 
-function getARMA(samples, dispersion, p, r, pNums, rNums) {
-    let res = []
-
-    for (let i = 0; i < samples; i++) {
-        res.push(y(i, dispersion, p, r, pNums, rNums, res))
+    function nValues(dispersion) {
+        let x = 0;
+        for (let i = 0; i < 12; i = i  + 1) {
+            x += frand()
+        }
+        return (x - 6) * Math.sqrt(dispersion);
     }
 
-    function y(n, dispersion, p, r, pNums, rNums, res) {
-        const arma = []
-
-        if (n === 0) {
-            for (let i = 0; i < samples; i++) {
-                arma.push(getRandom12(dispersion))
-            }
+    function sum(factor, values) {
+        let answer = 0
+        for ( let i = 0; i < factor.length && values.length - i - 1 >= 0; i = i + 1) {
+            answer += factor[i] * values[values.length - i - 1];
         }
-
-        let tmp_res = arma[n]
-
-        for (let i = 0; i < p && n - i > 0; i++) {
-            tmp_res += arma[n - i - 1] * pNums[i]
-        }
-
-        for (let i = 0; i < r && n - i > 0; i++) {
-            tmp_res -= res[n - i - 1] * rNums[i]
-        }
-
-        return tmp_res
+        return answer;
     }
-
-    return res
-}
-
-function getRandom12(d) {
-    let frand12 = 0
-    for (let i = 0; i < 12; i++) {
-        frand12 += frand()
-    }
-    return (frand12 - 6) * Math.sqrt(d)
 }

@@ -41,6 +41,7 @@ app.get('/get-file', (req, res) => {
         let channelsName = lines[11].split(';');
         channelsName = channelsName.slice(0, +channelsNumber);
         const sliderData = []
+        const speechData = []
 
         let reverseStartDay = startDate.split("-")
         reverseStartDay = reverseStartDay[2] + '-' + reverseStartDay[1] + '-' + reverseStartDay[0]
@@ -66,6 +67,7 @@ app.get('/get-file', (req, res) => {
                 })
             }
             sliderData.push(new Date(XYstart.getTime() + (i * (1 / samplingRate)) * 1000).getTime())
+            speechData.push(XYstart.getTime() + (i * (1 / samplingRate)) * 1000)
         }
 
 
@@ -85,7 +87,8 @@ app.get('/get-file', (req, res) => {
             signalsXY: signalsXY,
             time: 1 / samplingRate,
             file: req.query.id,
-            sliderData: sliderData
+            sliderData: sliderData,
+            speechData: speechData
         });
     })
 });
@@ -110,7 +113,7 @@ app.post("/updateFile", (req, res) => {
 
     for (let i = 0; i < data.samplesNumber; i++) {
         let line = ''
-        for (let j = 0; j < data.channelsName.split(';').length; j++) {
+        for (let j = 0; j < data.channelsName.length; j++) {
             line += data.signals[j][i] + ' '
         }
         newData += line + '\n'

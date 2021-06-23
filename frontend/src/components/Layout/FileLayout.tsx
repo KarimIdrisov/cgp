@@ -66,7 +66,8 @@ interface Data {
     signalsXY: any,
     time: number,
     file: string,
-    sliderData: Array<number>
+    sliderData: Array<number>,
+    speechData: Array<number>
 }
 
 export default function FileLayout(props: any) {
@@ -80,10 +81,20 @@ export default function FileLayout(props: any) {
     const [max, setMax] = React.useState(data?.samplesNumber)
     const [datetimeMin, setDatetimeMin] = React.useState<number>(0)
     const [datetimeMax, setDatetimeMax] = React.useState<number>(0)
+    const [datetimeMinAnalyse, setDatetimeMinAnalyse] = React.useState<number>(0)
+    const [datetimeMaxAnalyse, setDatetimeMaxAnalyse] = React.useState<number>(0)
+
+    const [minAnalyse, setMinAnalyse] = React.useState(0)
+    const [maxAnalyse, setMaxAnalyse] = React.useState(data?.samplesNumber)
+
+    const [analyseLength, setAnalyseLength] = React.useState(0)
+
     const [spline, setSpline] = React.useState(false)
     const [markers, setMarkers] = React.useState(false)
     const [charts, setCharts] = React.useState([])
+    const [analyseCharts, setAnalyseCharts] = React.useState([])
     const [zeroSample, setZeroSample] = React.useState('zero')
+    const [logarithmic, setLogarithmic] = React.useState(false)
 
     function useForceUpdate() {
         const [value, setValue] = useState(0); // integer state
@@ -167,7 +178,8 @@ export default function FileLayout(props: any) {
                 signalsXY: tmpChannelsXY,
                 time: data?.time,
                 file: data?.file,
-                sliderData: data?.sliderData
+                sliderData: data?.sliderData,
+                speechData: data?.speechData
             })
             forceUpdate()
         }
@@ -221,6 +233,12 @@ export default function FileLayout(props: any) {
         setCharts(tmp)
     }
 
+    function updateAnalyseCharts(ref: any) {
+        const tmp = analyseCharts
+        // @ts-ignore
+        tmp.push(ref)
+        setAnalyseCharts(tmp)
+    }
 
     function syncHandler(event: any) {
         const chartsArr = charts;
@@ -253,10 +271,122 @@ export default function FileLayout(props: any) {
                 setDatetimeMax(event.axisX[0].viewportMaximum)
 
                 // @ts-ignore
-                setMin(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMinimum) / 1000) * 1000)))
-                // @ts-ignore
-                setMax(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMaximum) / 1000) * 1000)))
+                if (data?.samplingRate > 1) {
+                    // @ts-ignore
+                    if (data?.speechData.indexOf(event.axisX[0].viewportMinimum) !== -1 && data?.speechData.indexOf(event.axisX[0].viewportMaximum) !== -1) {
+                        // @ts-ignore
+                        setMin(data?.speechData.indexOf(event.axisX[0].viewportMinimum))
 
+                        // @ts-ignore
+                        setMax(data?.speechData.indexOf(event.axisX[0].viewportMaximum))
+                    } else {
+                        // @ts-ignore
+                        for (let i = 0; i < data?.speechData.length; i = i + 1) {
+                            if ( Math.abs(data?.speechData[i] - event.axisX[0].viewportMinimum) < 0.1) {
+                                setMin(i);
+                                break;
+                            }
+                        }
+                        for (let i = data?.speechData.length; i > 0; i = i - 1) {
+                            if ( Math.abs(data?.speechData[i] - event.axisX[0].viewportMaximum) < 0.1) {
+                                setMax(i);
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // @ts-ignore
+                    if (data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMinimum) / 1000) * 1000)) !== -1 && data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMaximum) / 1000) * 1000)) !== -1) {
+                        // @ts-ignore
+                        setMin(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMinimum) / 1000) * 1000)))
+
+                        // @ts-ignore
+                        setMax(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMaximum) / 1000) * 1000)))
+                    } else {
+                        // @ts-ignore
+                        for (let i = 0; i < data?.sliderData.length; i = i + 1) {
+                            // @ts-ignore
+                            if ((data?.sliderData[i] - event.axisX[0].viewportMinimum) < 10000) {
+                                // @ts-ignore
+                                setMin(i)
+                                break;
+                            }
+                        }
+                        // @ts-ignore
+                        for (let i = 0; i < data?.sliderData.length; i = i + 1) {
+                            // @ts-ignore
+                            if ((data?.sliderData[i] - event.axisX[0].viewportMinimum) < 10000) {
+                                // @ts-ignore
+                                setMax(i)
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // @ts-ignore
+                chart.options.axisY.viewportMinimum = event.axisY[0].viewportMinimum;
+                // @ts-ignore
+                chart.options.axisY.viewportMaximum = event.axisY[0].viewportMaximum;
+
+                // @ts-ignore
+                chart.render();
+            }
+        }
+    }
+
+    function syncHandlerAnalyse(event: any) {
+        const chartsArr = analyseCharts;
+        // @ts-ignore
+        for (let i = 0; i < chartsArr.length; i++) {
+            // @ts-ignore
+            const chart = chartsArr[i];
+
+            // @ts-ignore
+            if (!chart.options.axisX) chart.options.axisX = {};
+
+            // @ts-ignore
+            if (!chart.options.axisY) chart.options.axisY = {};
+
+            if (event.trigger === "reset") {
+                // @ts-ignore
+                chart.options.axisX.viewportMinimum = chart.options.axisX.viewportMaximum = null;
+                // @ts-ignore
+                chart.options.axisY.viewportMinimum = chart.options.axisY.viewportMaximum = null;
+
+                setDatetimeMinAnalyse(0)
+                setDatetimeMaxAnalyse(0)
+
+                setMinAnalyse(min)
+                setMaxAnalyse(max)
+
+                // @ts-ignore
+                chart.render();
+            } else {
+                setDatetimeMinAnalyse(event.axisX[0].viewportMinimum)
+                setDatetimeMaxAnalyse(event.axisX[0].viewportMaximum)
+
+                const time = []
+
+                // @ts-ignore
+                for (let i = 0; i < analyseLength; i = i + 1) {
+                    // @ts-ignore
+                    time.push(i / (data?.samplesNumber * data?.samplingRate))
+                }
+
+                for (let i = 0; i < time.length; i = i + 1) {
+                    if (Math.abs(time[i] - event.axisX[0].viewportMinimum) < 0.001) {
+                        setMinAnalyse(i)
+                        break;
+                    }
+                }
+
+                for (let i = 0; i < time.length; i = i + 1) {
+                    if (Math.abs(time[i] - event.axisX[0].viewportMaximum) < 0.001) {
+                        setMaxAnalyse(i)
+                        break;
+                    }
+                }
 
                 // @ts-ignore
                 chart.options.axisY.viewportMinimum = event.axisY[0].viewportMinimum;
@@ -299,7 +429,8 @@ export default function FileLayout(props: any) {
                 signalsXY: tmpChannelsXY,
                 time: data?.time,
                 file: data?.file,
-                sliderData: data?.sliderData
+                sliderData: data?.sliderData,
+                speechData: data?.speechData
             })
             forceUpdate()
         }
@@ -355,6 +486,35 @@ export default function FileLayout(props: any) {
     const [median, setMedian] = React.useState<number>()
     const [k, setK] = React.useState<number>(30)
     const [histogram, setHistogram] = React.useState()
+
+    const [l, setL] = React.useState(0)
+
+    function changeL(num: number) {
+        setL(num)
+        const tmp = analyseSignals
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, num))
+            tmpData[tmp[i]].push(...getFFT(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, num))
+        }
+
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
+    }
 
     function arrayMin(arr: any) {
         return arr.reduce(function (p: any, v: any) {
@@ -450,19 +610,15 @@ export default function FileLayout(props: any) {
                 tmpDataPower[tmp[i]] = []
             }
 
+
             for (let i = 0; i < tmp.length; i = i + 1) {
-                let zero = 0
-                if (zeroSample === 'nothing') {
-                    zero = data?.signalsXY[tmp[i]][min]['y']
+                let power = 1
+                while (data?.signals[tmp[i]].slice(min, max).length > power) {
+                    power = power * 2
                 }
-                if (zeroSample === 'zero') {
-                    zero = 0
-                }
-                if (zeroSample === 'neighbor') {
-                    zero = Math.abs(data?.signalsXY[tmp[i]][min + 1]['y'])
-                }
-                tmpDataPower[tmp[i]].push(...getFFTPower(zero, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate))
-                tmpData[tmp[i]].push(...getFFT(zero, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate))
+                setAnalyseLength(power)
+                tmpDataPower[tmp[i]].push(...getFFTPower(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate))
+                tmpData[tmp[i]].push(...getFFT(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate))
             }
 
             // @ts-ignore
@@ -470,40 +626,147 @@ export default function FileLayout(props: any) {
             // @ts-ignore
             setAnalyseSignalPowerData(tmpDataPower)
             forceUpdate()
-
         }
+    }
+
+    function turnLogarithmic() {
+        setLogarithmic(!logarithmic)
     }
 
     // TODO change spectre
     function changeSpectre(name: string) {
         setCurrent(name)
-        console.log(name)
         forceUpdate()
     }
 
     // TODO analyse from sidebar
     function analyseFromSidebar(name: string) {
+        const array = analyseSignals
+        if (name in array) {
+            return
+        }
 
+        array.push(name)
+        setOscillograms([])
+        setCharts([])
+        const tmp = array
+        setAnalyseSignals(array)
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
+    }
+
+    function deleteAnalyse(name: string) {
+        const tmp = analyseSignals.filter(channel => channel !== name)
+        setAnalyseSignals(tmp)
+        setOscillograms([])
+        setCharts([])
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
     }
 
     // TODO analyse from name
     function newAnalyseFromName(name: string) {
-        let tmp = analyseSignals
-
-        if (tmp !== undefined && !tmp.includes(name)) {
-            tmp.push(name)
-            setAnalyseSignals(tmp)
-            forceUpdate()
+        const array = analyseSignals
+        if (name in array) {
+            return
         }
+        array.push(name)
+        setOscillograms([])
+        setCharts([])
+        const tmp = array
+        setAnalyseSignals(array)
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
     }
 
     // TODO change dynamic
     function nullSample(name: string) {
         setZeroSample(name)
+        const tmp = analyseSignals
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
     }
 
     function updateK(num: number) {
         setK(num)
+    }
+
+    function checkAnalyse() {
+        if (analyseSignals.length > 0) {
+            setAnalyseSignals([])
+        }
     }
 
     if (loading) {
@@ -522,15 +785,16 @@ export default function FileLayout(props: any) {
                         channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
                         startTime={data?.start} endTime={data?.end} sources={data?.channelsSource} update={update}
                         addOscillogram={newOscillogram} saveNew={saveNew} getStatistic={getStatistic}
-                        haveOscillogram={oscillograms.length > 0}
+                        haveOscillogram={oscillograms.length > 0} checkAnalyse={checkAnalyse}
                         newAnalyseFromOscillograms={newAnalyseFromOscillograms}
                         newAnalyseFromName={newAnalyseFromName}
                         k={k} updateK={updateK}
                 />
                 {analyseSignals.length > 0 ? (
-                    <AnalyseTools height={height} min={min} max={max} changeSize={changeSize}
+                    <AnalyseTools height={height} min={minAnalyse} max={maxAnalyse} changeSize={changeSize}
                                   setFragment={setFragment} dropFragment={dropFragment}
                                   nullSample={nullSample} changeSpectre={changeSpectre}
+                                  l={l} changeL={changeL} log={logarithmic} logarithmic={turnLogarithmic}
                                   turnInterpolation={turnInterpolation} turnSpline={turnSpline}/>) : <></>}
                 <div style={{display: 'flex', flexDirection: 'column'}}>
                     {analyseSignals.length > 0 ? (
@@ -539,11 +803,12 @@ export default function FileLayout(props: any) {
                                 <>
                                     <AnalyseGrams signal={analyseSignalsSpectreData[channel]} key={number}
                                                   source={data?.channelsSource[channel]}
-                                                  sync={syncHandler} updateRef={updateCharts}
-                                                  name={channel} height={height} min={datetimeMin} max={datetimeMax}
-                                                  deleteOscillogram={deleteOscillogram}
+                                                  sync={syncHandlerAnalyse} updateRef={updateAnalyseCharts}
+                                                  name={channel} height={height} min={datetimeMinAnalyse}
+                                                  max={datetimeMaxAnalyse}
+                                                  deleteAnalyse={deleteAnalyse}
                                                   spline={spline} markers={markers}
-                                                   current={current}
+                                                  current={current} log={logarithmic}
                                                   power={analyseSignalsPowerData[channel]}
 
                                     />
@@ -567,6 +832,7 @@ export default function FileLayout(props: any) {
                                                  name={channel} height={height} min={datetimeMin} max={datetimeMax}
                                                  deleteOscillogram={deleteOscillogram}
                                                  spline={spline} markers={markers}
+                                                 speechData={data?.speechData} fd={data?.samplingRate}
 
                                     />
                                 </div>)

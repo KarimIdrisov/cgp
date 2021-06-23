@@ -22,6 +22,8 @@ import sort from "../../utils/sort";
 import AnalyseTools from "../File/AnalyseTools";
 import getFFT from "../../utils/getFFT";
 import Histogram from "../Histogram";
+import getFFTPower from "../../utils/getFFTPower";
+import AnalyseGrams from "../File/AnalyseGrams";
 
 const useStyles = makeStyles((theme) => ({
     mainGrid: {
@@ -60,7 +62,8 @@ interface Data {
     signalsXY: any,
     time: Date,
     file: string,
-    sliderData: Array<number>
+    sliderData: Array<number>,
+    speechData: Array<number>
 }
 
 export default function ModelsLayout(props: any) {
@@ -78,12 +81,21 @@ export default function ModelsLayout(props: any) {
     const [markers, setMarkers] = React.useState(false)
     const [charts, setCharts] = React.useState([])
     const [zeroSample, setZeroSample] = React.useState('zero')
+    const [logarithmic, setLogarithmic] = React.useState(false)
+
+
+    const [datetimeMinAnalyse, setDatetimeMinAnalyse] = React.useState<number>(0)
+    const [datetimeMaxAnalyse, setDatetimeMaxAnalyse] = React.useState<number>(0)
+
+    const [minAnalyse, setMinAnalyse] = React.useState(0)
+    const [analyseCharts, setAnalyseCharts] = React.useState([])
+
+    const [analyseLength, setAnalyseLength] = React.useState(0)
+
+    const [maxAnalyse, setMaxAnalyse] = React.useState(data?.samplesNumber)
 
     const [openStatistic, setOpenStatistic] = React.useState(false);
 
-    function nullSample(name: string) {
-        setZeroSample(name)
-    }
 
     const handleClickOpen = () => {
         setOpenStatistic(true);
@@ -101,7 +113,8 @@ export default function ModelsLayout(props: any) {
     // channels for oscillogram
     const [oscillograms, setOscillograms] = React.useState<Array<string>>([])
     const [analyseSignals, setAnalyseSignals] = React.useState<Array<string>>([])
-    const [analyseSignalsData, setAnalyseSignalData] = React.useState<Array<object>>([])
+    const [analyseSignalsSpectreData, setAnalyseSignalSpectreData] = React.useState<Array<object>>([])
+    const [analyseSignalsPowerData, setAnalyseSignalPowerData] = React.useState<Array<object>>([])
 
 
     const [loading, setLoading] = React.useState(true)
@@ -120,6 +133,7 @@ export default function ModelsLayout(props: any) {
                 for (let i = 0; i < samples; i = i + 1) {
                     sliderData.push((new Date((new Date("01-01-2000")).getTime() + (i * (1 / fd)) * 1000)).getTime())
                 }
+                setMax(samples)
                 // @ts-ignore
                 setData({
                     channelsName: [],
@@ -145,14 +159,15 @@ export default function ModelsLayout(props: any) {
 
     function addNewSignal(type: string, args: string) {
         let res = []
-        if (type === 'linear') {
+        if (type === 'linear' || type === 'multiplicative') {
             const names = args.split(':')[0]
             const channels = []
-            for (let key in data?.signals.keys()) {
+            for (let key in data?.signals) {
                 if (names.includes(key)) {
                     channels.push(data?.signals[key])
                 }
             }
+
             // @ts-ignore
             res = getNewSignalData(channels, type, args, data?.samplesNumber, data?.samplingRate, new Date(data?.start))
         } else {
@@ -184,7 +199,8 @@ export default function ModelsLayout(props: any) {
                 signalsXY: tmpChannelsXY,
                 time: data?.time,
                 file: data?.file,
-                sliderData: data?.sliderData
+                sliderData: data?.sliderData,
+                speechData: data?.speechData
             })
             forceUpdate()
         }
@@ -214,6 +230,13 @@ export default function ModelsLayout(props: any) {
     function dropFragment() {
         setMin(0)
         setMax(data?.samplesNumber)
+    }
+
+    function updateAnalyseCharts(ref: any) {
+        const tmp = analyseCharts
+        // @ts-ignore
+        tmp.push(ref)
+        setAnalyseCharts(tmp)
     }
 
     function syncHandler(event: any) {
@@ -247,10 +270,96 @@ export default function ModelsLayout(props: any) {
                 setDatetimeMax(event.axisX[0].viewportMaximum)
 
                 // @ts-ignore
-                setMin(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMinimum) / 1000) * 1000)))
-                // @ts-ignore
-                setMax(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMaximum) / 1000) * 1000)))
+                if (data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMinimum) / 1000) * 1000)) !== -1 && data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMaximum) / 1000) * 1000)) !== -1) {
+                    // @ts-ignore
+                    setMin(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMinimum) / 1000) * 1000)))
 
+                    // @ts-ignore
+                    setMax(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMaximum) / 1000) * 1000)))
+                } else {
+                    // @ts-ignore
+                    for (let i = 0; i < data?.sliderData.length; i = i + 1) {
+                        // @ts-ignore
+                        if ((data?.sliderData[i] - event.axisX[0].viewportMinimum) < 10000) {
+                            // @ts-ignore
+                            setMin(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMinimum) / 1000) * 1000)))
+                            break;
+                        }
+                    }
+                    // @ts-ignore
+                    for (let i = 0; i < data?.sliderData.length; i = i + 1) {
+                        // @ts-ignore
+                        if ((data?.sliderData[i] - event.axisX[0].viewportMinimum) < 10000) {
+                            // @ts-ignore
+                            setMax(data.sliderData.indexOf((Math.round(Math.round(event.axisX[0].viewportMaximum) / 1000) * 1000)))
+                            break;
+                        }
+                    }
+                }
+
+                // @ts-ignore
+                chart.options.axisY.viewportMinimum = event.axisY[0].viewportMinimum;
+                // @ts-ignore
+                chart.options.axisY.viewportMaximum = event.axisY[0].viewportMaximum;
+
+                // @ts-ignore
+                chart.render();
+            }
+        }
+    }
+
+    function syncHandlerAnalyse(event: any) {
+        const chartsArr = analyseCharts;
+        // @ts-ignore
+        for (let i = 0; i < chartsArr.length; i++) {
+            // @ts-ignore
+            const chart = chartsArr[i];
+
+            // @ts-ignore
+            if (!chart.options.axisX) chart.options.axisX = {};
+
+            // @ts-ignore
+            if (!chart.options.axisY) chart.options.axisY = {};
+
+            if (event.trigger === "reset") {
+                // @ts-ignore
+                chart.options.axisX.viewportMinimum = chart.options.axisX.viewportMaximum = null;
+                // @ts-ignore
+                chart.options.axisY.viewportMinimum = chart.options.axisY.viewportMaximum = null;
+
+                setDatetimeMinAnalyse(0)
+                setDatetimeMaxAnalyse(0)
+
+                setMinAnalyse(min)
+                setMaxAnalyse(max)
+
+                // @ts-ignore
+                chart.render();
+            } else {
+                setDatetimeMinAnalyse(event.axisX[0].viewportMinimum)
+                setDatetimeMaxAnalyse(event.axisX[0].viewportMaximum)
+
+                const time = []
+
+                // @ts-ignore
+                for (let i = 0; i < analyseLength; i = i + 1) {
+                    // @ts-ignore
+                    time.push(i / (data?.samplesNumber * data?.samplingRate))
+                }
+
+                for (let i = 0; i < time.length; i = i + 1) {
+                    if (Math.abs(time[i] - event.axisX[0].viewportMinimum) < 0.001) {
+                        setMinAnalyse(i)
+                        break;
+                    }
+                }
+
+                for (let i = 0; i < time.length; i = i + 1) {
+                    if (Math.abs(time[i] - event.axisX[0].viewportMaximum) < 0.001) {
+                        setMaxAnalyse(i)
+                        break;
+                    }
+                }
 
                 // @ts-ignore
                 chart.options.axisY.viewportMinimum = event.axisY[0].viewportMinimum;
@@ -272,6 +381,7 @@ export default function ModelsLayout(props: any) {
 
     function saveNew(names: string, file: string) {
         const savedChannels = names.slice(1).split(';')
+        console.log(savedChannels)
         if (data !== undefined) {
             const savedSignals: any[] = []
             savedChannels.forEach(channel => {
@@ -323,7 +433,8 @@ export default function ModelsLayout(props: any) {
                 signalsXY: tmpChannelsXY,
                 time: data?.time,
                 file: data?.file,
-                sliderData: data?.sliderData
+                sliderData: data?.sliderData,
+                speechData: data?.speechData
             })
             forceUpdate()
         }
@@ -362,6 +473,8 @@ export default function ModelsLayout(props: any) {
             return (p > v ? p : v);
         });
     }
+
+    const [l, setL] = React.useState(0)
 
     function getStatistic(name: string) {
         if (data !== undefined) {
@@ -428,9 +541,12 @@ export default function ModelsLayout(props: any) {
         setOpenStatistic(true)
     }
 
+    const [current, setCurrent] = useState('amplitudeSpectre')
+
     function newAnalyseFromOscillograms() {
         const tmp = oscillograms
         const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
         if (analyseSignals.length === 0) {
             setOscillograms([])
             setCharts([])
@@ -438,37 +554,148 @@ export default function ModelsLayout(props: any) {
             for (let i = 0; i < tmp.length; i = i + 1) {
                 // @ts-ignore
                 tmpData[tmp[i]] = []
+                // @ts-ignore
+                tmpDataPower[tmp[i]] = []
             }
 
+
             for (let i = 0; i < tmp.length; i = i + 1) {
-                let zero = 0
-                if (zeroSample === 'nothing') {
-                    zero = data?.signalsXY[tmp[i]][0]['y']
+                let power = 1
+                while (data?.signals[tmp[i]].slice(min, max).length > power) {
+                    power = power * 2
                 }
-                if (zeroSample === 'zero') {
-                    zero = 0
-                }
-                if (zeroSample === 'neighbor') {
-                    zero = Math.abs(data?.signalsXY[tmp[i]][1]['y'])
-                }
-                tmpData[tmp[i]].push(...getFFT(zero, data?.signals[tmp[i]].slice(1), data?.sliderData))
+                setAnalyseLength(power)
+                tmpDataPower[tmp[i]].push(...getFFTPower(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate))
+                tmpData[tmp[i]].push(...getFFT(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate))
             }
 
             // @ts-ignore
-            setAnalyseSignalData(tmpData)
+            setAnalyseSignalSpectreData(tmpData)
+            // @ts-ignore
+            setAnalyseSignalPowerData(tmpDataPower)
             forceUpdate()
-
         }
     }
 
-    function newAnalyseFromName(name: string) {
-        let tmp = analyseSignals
+    // TODO change spectre
+    function changeSpectre(name: string) {
+        setCurrent(name)
+        forceUpdate()
+    }
 
-        if (tmp !== undefined && !tmp.includes(name)) {
-            tmp.push(name)
-            setAnalyseSignals(tmp)
-            forceUpdate()
+    // TODO analyse from sidebar
+    function analyseFromSidebar(name: string) {
+        const array = analyseSignals
+        if (name in array) {
+            return
         }
+        array.push(name)
+        const tmp = array
+        setAnalyseSignals(array)
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
+    }
+
+    // TODO analyse from name
+    function newAnalyseFromName(name: string) {
+        const array = analyseSignals
+        if (name in array) {
+            return
+        }
+        array.push(name)
+        const tmp = array
+        setAnalyseSignals(array)
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
+    }
+
+    // TODO change dynamic
+    function nullSample(name: string) {
+        setZeroSample(name)
+        const tmp = analyseSignals
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
+    }
+
+    function changeL(num: number) {
+        setL(num)
+        const tmp = analyseSignals
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, num))
+            tmpData[tmp[i]].push(...getFFT(zeroSample, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, num))
+        }
+
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
     }
 
     function updateK(num: number) {
@@ -482,6 +709,44 @@ export default function ModelsLayout(props: any) {
             </div>
         )
     }
+    function turnLogarithmic() {
+        setLogarithmic(!logarithmic)
+    }
+
+    function checkAnalyse() {
+        if (analyseSignals.length > 0) {
+            setAnalyseSignals([])
+        }
+    }
+
+    function deleteAnalyse(name: string) {
+        const tmp = analyseSignals.filter(channel => channel !== name)
+        setAnalyseSignals(tmp)
+        setOscillograms([])
+        setCharts([])
+        const tmpData: Array<object> = []
+        const tmpDataPower: Array<object> = []
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            // @ts-ignore
+            tmpData[tmp[i]] = []
+            // @ts-ignore
+            tmpDataPower[tmp[i]] = []
+        }
+
+        for (let i = 0; i < tmp.length; i = i + 1) {
+            tmpDataPower[tmp[i]].push(...getFFTPower(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+            tmpData[tmp[i]].push(...getFFT(name, data?.signals[tmp[i]].slice(min, max), data?.sliderData, data?.samplesNumber, data?.samplingRate, l))
+        }
+
+        // @ts-ignore
+        setAnalyseSignalSpectreData(tmpData)
+        // @ts-ignore
+        setAnalyseSignalPowerData(tmpDataPower)
+        forceUpdate()
+    }
+
+
     return (
         <React.Fragment>
             <CssBaseline/>
@@ -490,28 +755,31 @@ export default function ModelsLayout(props: any) {
                         channels={data?.channelsName} file={props.file} addNewSignal={addNewSignal}
                         startTime={data?.start} endTime={data?.end} sources={data?.channelsSource}
                         addOscillogram={newOscillogram} saveNew={saveNew} getStatistic={getStatistic}
-                        haveOscillogram={oscillograms.length > 0}
+                        haveOscillogram={oscillograms.length > 0} checkAnalyse={checkAnalyse}
                         newAnalyseFromOscillograms={newAnalyseFromOscillograms}
                         newAnalyseFromName={newAnalyseFromName}
                         k={k} updateK={updateK}
                 />
 
                 {analyseSignals.length > 0 ? (
-                    <AnalyseTools height={height} min={min} max={max} changeSize={changeSize}
+                    <AnalyseTools height={height} min={minAnalyse} max={maxAnalyse} changeSize={changeSize}
                                   setFragment={setFragment} dropFragment={dropFragment}
-                                  nullSample={nullSample}
+                                  nullSample={nullSample} changeSpectre={changeSpectre}
+                                  l={l} changeL={changeL} log={logarithmic} logarithmic={turnLogarithmic}
                                   turnInterpolation={turnInterpolation} turnSpline={turnSpline}/>) : <></>}
                 <div style={{display: 'flex', flexDirection: 'column'}}>
                     {analyseSignals.length > 0 ? (
                         analyseSignals.map((channel: string, number) => {
                             return (
                                 <>
-                                    <Oscillogram signal={analyseSignalsData[channel]} key={number}
-                                                 source={data?.channelsSource[channel]}
-                                                 sync={syncHandler} updateRef={updateCharts}
-                                                 name={channel} height={height} min={0} max={0}
-                                                 deleteOscillogram={deleteOscillogram}
-                                                 spline={spline} markers={markers}
+                                    <AnalyseGrams signal={analyseSignalsSpectreData[channel]} key={number}
+                                                  source={data?.channelsSource[channel]}
+                                                  sync={syncHandlerAnalyse} updateRef={updateAnalyseCharts}
+                                                  name={channel} height={height} min={datetimeMinAnalyse} max={datetimeMaxAnalyse}
+                                                  deleteAnalyse={deleteAnalyse}
+                                                  spline={spline} markers={markers}
+                                                  current={current} log={logarithmic}
+                                                  power={analyseSignalsPowerData[channel]}
 
                                     />
                                 </>)
@@ -545,7 +813,7 @@ export default function ModelsLayout(props: any) {
                 <Sidebar samples={data?.samplesNumber} fd={data?.samplingRate} addOscillogram={newOscillogram}
                          channels={data?.channelsName} file={props.file} sources={data?.channelsSource}
                          signals={data?.signals} signalsXY={data?.signalsXY}
-                         deleteSignal={deleteSignal} getStatistic={getStatistic}/>
+                         deleteSignal={deleteSignal} getStatistic={getStatistic} analyse={analyseFromSidebar}/>
             </Container>
 
             <Dialog

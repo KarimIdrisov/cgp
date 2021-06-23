@@ -82,15 +82,6 @@ const useStyles = makeStyles((theme) => ({
     channels: {}
 }));
 
-interface Section {
-    title: string,
-    url: string,
-}
-
-const sections = [
-    {title: 'Настройки', url: '#'},
-];
-
 export default function Header(props: any) {
     const classes = useStyles();
     const [modelsFile, setModelsFile] = useState('')
@@ -115,6 +106,7 @@ export default function Header(props: any) {
     };
 
     const handleClickModels = (event: React.MouseEvent<HTMLButtonElement>) => {
+        props.checkAnalyse()
         setAnchorModels(event.currentTarget);
     };
 

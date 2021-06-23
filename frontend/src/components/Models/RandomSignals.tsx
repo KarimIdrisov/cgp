@@ -31,10 +31,10 @@ export default function RandomSignals(props: any) {
     const [dispersionLaw, setDispersionLaw] = React.useState(1)
 
     const [dispersionRegression, setDispersionRegression] = React.useState(0)
-    const [p, setP] = React.useState(0)
-    const [r, setR] = React.useState(0)
-    const [pNums, setPNums] = React.useState(' ')
-    const [rNums, setRNums] = React.useState(' ')
+    const [p, setP] = React.useState(6)
+    const [r, setR] = React.useState(3)
+    const [pNums, setPNums] = React.useState('-4.167 7.940 -9.397 7.515 -3.752 0.862')
+    const [rNums, setRNums] = React.useState('-2.28 1.77 -0.472')
 
     const handleCloseDialog = () => {
         setOpenWhiteEqual(false);
@@ -190,7 +190,7 @@ export default function RandomSignals(props: any) {
                         autoFocus
                         margin="dense"
                         variant='outlined'
-                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[0] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
                         type="number"
                         defaultValue={p}
                         onChange={num => setP(+num.target.value)}
@@ -210,7 +210,7 @@ export default function RandomSignals(props: any) {
                         autoFocus
                         margin="dense"
                         variant='outlined'
-                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[1] : ''}
+                        label={getParamsNames(current) !== undefined ? getParamsNames(current)[2] : ''}
                         type="number"
                         defaultValue={r}
                         onChange={num => setR(+num.target.value)}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 
 import CanvasJSReact from '../../assets/canvasjs.react';
 import {Menu, MenuItem} from "@material-ui/core";
@@ -35,6 +35,25 @@ export default function Oscillogram(props: any) {
         props.deleteOscillogram(props.name)
     }
 
+    const [data, setData] = useState([])
+
+    useEffect(() => {
+        const tmp = []
+        if (props.fd > 1) {
+            for (let i = 0; i < props.signal.length; i = i + 1) {
+                tmp.push({
+                    'x': props.speechData[i],
+                    'y': props.signal[i]['y'],
+                })
+            }
+            // @ts-ignore
+            setData(tmp)
+        } else {
+            setData(props.signal)
+        }
+    }, []);
+
+
     const options = {
         animationEnabled: false,
         zoomEnabled: true,
@@ -52,7 +71,7 @@ export default function Oscillogram(props: any) {
         },
         data: [{
             type: (props.source === "Задержанный единичный импульс" || props.source === 'Задержанный единичный скачок') ? 'column' : (props.spline ? 'spline' : 'line'),
-            dataPoints: props.signal,
+            dataPoints: data,
             xValueType: "dateTime",
             markerType: "circle",
             markerSize: props.markers ? 8 : 0,
