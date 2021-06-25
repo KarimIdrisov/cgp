@@ -43,7 +43,7 @@ export default function getFFTPower(zero, array, time, samples, fd, l=0) {
 
         for (let i = 1; i < dft.spectrum.length / 2; i = i + 1) {
             dataXY.push({
-                'x': i / (samples * fd * 2),
+                'x': i / (dft.spectrum.length / 2 * fd * 2),
                 'y': i === 0 ? zero : (1 / (2 * l + 1)) * sum(l, a, i)
             })
         }
@@ -69,9 +69,9 @@ export default function getFFTPower(zero, array, time, samples, fd, l=0) {
         })
     }
 
-    for (let i = 1; i < dft.spectrum.length; i = i + 1) {
+    for (let i = 1; i < dft.spectrum.length / 2; i = i + 1) {
         dataXY.push({
-            'x': i / (samples * fd * 2),
+            'x': i / (dft.spectrum.length / 2 * fd * 2),
             'y': i === 0 ? zero : Math.pow(fd, 2) * Math.pow(dft.spectrum[i], 2)
         })
     }

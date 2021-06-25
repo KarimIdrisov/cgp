@@ -26,7 +26,7 @@ app.get('/get-file', (req, res) => {
         res.json()
     }
 
-    fs.readFile(`@/../uploads/${file}`, 'utf8', (err, data) => {
+    fs.readFile(`/home/karim/WebstormProjects/cgp/backend/uploads/${file}`, 'utf8', (err, data) => {
         if (err) {
             console.error(err)
             return
